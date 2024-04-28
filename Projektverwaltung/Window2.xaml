@@ -1,0 +1,37 @@
+﻿<Window x:Class="Projektverwaltung.Window2"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Projektverwaltung"
+        mc:Ignorable="d"
+        Title="Window2" Height="450" Width="800">
+    <Grid>
+        <Label>
+            Wähle einen Projekttyp
+        </Label>
+        <RadioButton x:Name="rb_efh" IsChecked="True" GroupName="BV_TYP" Content="EFH"/>
+        <RadioButton x:Name="rb_efh2" IsChecked="True" GroupName="BV_TYP" Content="EFH"/>
+        <RadioButton x:Name="rb_mfh" GroupName="BV_TYP">
+            MFH
+        </RadioButton>
+        <RadioButton x:Name="rb_mfh_mit_gewerbe" GroupName="BV_TYP">
+            MFH mit Gewerbe
+        </RadioButton>
+        <RadioButton x:Name="rb_Bürogebäude" GroupName="BV_TYP">
+            Bürogebäude
+        </RadioButton>
+        <RadioButton x:Name="rb_Pflegeheim" GroupName="BV_TYP">
+            Pflegeheim
+        </RadioButton>
+        <RadioButton x:Name="rb_Krankenhaus" GroupName="BV_TYP">
+            Krankenhaus
+        </RadioButton>
+        <Label></Label>
+        <!-- Buttons unten -->
+        <Button x:Name="btn_abbrechen" Click="Abbrechen_Click" Content="Abbrechen" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" Margin="10" Grid.ColumnSpan="2"/>
+        <Button x:Name="btn_weiter" Click="Weiter_Click" Content="Weiter" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" Margin="10" RenderTransformOrigin="0.481,-6.667"/>
+        <Button x:Name="btn_zurück" Click="zurück_Click" Content="Zurück" Grid.Row="1" HorizontalAlignment="Center" Margin="10" RenderTransformOrigin="-0.985,0.587"/>
+
+    </Grid>
+</Window>
