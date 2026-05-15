@@ -11,7 +11,7 @@ namespace ProjektverwaltungWtfDesktop;
 internal static class AppInfo
 {
     public const string ProductName = "Projektverwaltung_WTF";
-    public const string Version = "26.05.15.003.DEV.BETA";
+    public const string Version = "26.05.15.004.DEV.BETA";
     public const string Channel = "DEV.BETA";
     public const bool IsStable = false;
     public const string UpdateManifestUrl = "https://raw.githubusercontent.com/Thomash100/Projektverwaltung_WTF/master/update.json";

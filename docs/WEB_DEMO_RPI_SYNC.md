@@ -50,6 +50,21 @@ CORS_ORIGIN=*
 
 Die Windows-App und die Browser-App haben unter `Einstellungen` eine Server-Suche. Dort kann ein IP-Bereich wie `192.168.178` gescannt, ein Server übernommen, die Verbindung getestet und ein Projektstand hoch- oder heruntergeladen werden.
 
+## Installation auf dem Raspberry Pi
+
+Kurzbefehl auf Raspberry Pi OS Lite oder Debian/Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y git curl
+git clone https://github.com/Thomash100/Projektverwaltung_WTF.git
+cd Projektverwaltung_WTF
+chmod +x rpi/install-rpi-server.sh
+sudo ./rpi/install-rpi-server.sh
+```
+
+Die ausführliche Schritt-für-Schritt-Anleitung steht in [RPI_INSTALLATION.md](RPI_INSTALLATION.md).
+
 ## Einschränkungen der Developer-Beta
 
 - Die Synchronisation ist aktuell ein bewusster Einzeldatei-Sync, noch keine Konfliktauflösung.

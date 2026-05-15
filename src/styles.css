@@ -448,6 +448,33 @@ button {
   gap: 8px;
 }
 
+.install-steps {
+  display: grid;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.install-steps p {
+  margin: 0;
+}
+
+.command-block {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  border: 1px solid rgba(25, 34, 32, 0.12);
+  border-radius: 8px;
+  background: #192220;
+  color: #edf7f2;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+.command-block code {
+  font-family: "Cascadia Mono", "Consolas", monospace;
+}
+
 .sync-status {
   display: grid;
   gap: 10px;

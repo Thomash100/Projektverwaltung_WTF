@@ -12,7 +12,7 @@ Für die normale Nutzung die Windows-Setup-Datei herunterladen und ausführen:
 
 Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, erstellt Desktop- und Startmenü-Verknüpfungen und startet die Anwendung als richtige Windows-App mit eigenem Fenster. Die App läuft nicht als normaler Browser-Tab.
 
-Aktuelle Version: `26.05.15.003.DEV.BETA`
+Aktuelle Version: `26.05.15.004.DEV.BETA`
 
 Beim Start prüft die App automatisch, ob unter `update.json` eine neuere Version veröffentlicht wurde. Falls ein Update verfügbar ist, fragt die App per Popup nach, lädt nach Bestätigung die neue Setup-Datei herunter und startet die Installation. Zusätzlich gibt es in der App unter `Hilfe > Nach Updates suchen` eine manuelle Prüfung.
 
@@ -25,6 +25,21 @@ Hinweis: Diese Version ist eine Developer Beta. Setup und App zeigen deshalb ein
 Die Oberfläche kann auch als Demo-Webversion auf einer Internetseite bereitgestellt werden. Für eine öffentliche Homepage-Demo sollte nur der statische Demo-Modus verwendet werden, damit Besucher keine produktiven Daten auf einem öffentlichen Server speichern.
 
 Für Büro-/Unterwegsbetrieb ist ein Raspberry Pi oder Linux-Server als Sync-Ziel vorbereitet. Die App hat unter `Einstellungen` eine IP-/Netzwerksuche, Verbindungstest sowie gezieltes Hochladen und Laden des Projektstands. Details stehen in [docs/WEB_DEMO_RPI_SYNC.md](docs/WEB_DEMO_RPI_SYNC.md).
+
+## Raspberry-Pi-Installation
+
+Auf Raspberry Pi OS Lite oder Debian/Ubuntu per SSH:
+
+```bash
+sudo apt update
+sudo apt install -y git curl
+git clone https://github.com/Thomash100/Projektverwaltung_WTF.git
+cd Projektverwaltung_WTF
+chmod +x rpi/install-rpi-server.sh
+sudo ./rpi/install-rpi-server.sh
+```
+
+Das Skript richtet den systemd-Dienst ein, erzeugt einen Sync-Token und zeigt die Serveradresse für die App an. Ausführliche Anleitung: [docs/RPI_INSTALLATION.md](docs/RPI_INSTALLATION.md).
 
 ## Entwicklung
 
@@ -84,13 +99,16 @@ Projektverwaltung_WTF/
   docs/
     ARCHITECTURE.md
     DATA_MODEL.md
+    RPI_INSTALLATION.md
     ROADMAP.md
     SECURITY.md
     WEB_DEMO_RPI_SYNC.md
   database/
     schema.sql
   rpi/
+    README.md
     install-rpi-server.sh
+    projektverwaltung-wtf.env.example
     projektverwaltung-wtf.service
 ```
 

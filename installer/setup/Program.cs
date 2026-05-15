@@ -8,7 +8,7 @@ namespace ProjektverwaltungWtfSetup;
 internal static class Program
 {
     private const string AppName = "Projektverwaltung_WTF";
-    private const string AppVersion = "26.05.15.003.DEV.BETA";
+    private const string AppVersion = "26.05.15.004.DEV.BETA";
     private static readonly bool IsStable = false;
 
     [STAThread]

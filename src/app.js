@@ -5,6 +5,14 @@ const HELP_KEY = "projektverwaltung-wtf-help-open";
 const SYNC_SETTINGS_KEY = "projektverwaltung-wtf-sync-settings-v1";
 const app = document.querySelector("#app");
 const today = new Date("2026-05-15T00:00:00");
+const rpiInstallCommands = `sudo apt update
+sudo apt install -y git curl
+git clone https://github.com/Thomash100/Projektverwaltung_WTF.git
+cd Projektverwaltung_WTF
+chmod +x rpi/install-rpi-server.sh
+sudo ./rpi/install-rpi-server.sh
+hostname -I
+sudo grep SYNC_TOKEN /etc/projektverwaltung-wtf.env`;
 
 const routes = [
   ["dashboard", "Übersicht", "dashboard"],
@@ -1687,6 +1695,29 @@ function renderSettings() {
         <div class="notice">
           <strong>Hinweis</strong>
           <span>Für unterwegs bitte nicht ungeschützt ins Internet stellen. Sicherer ist Zugriff per VPN, Tailscale/WireGuard oder HTTPS-Reverse-Proxy mit Authentifizierung.</span>
+        </div>
+      </aside>
+    </section>
+    <section class="layout-two">
+      <div class="panel">
+        <div class="panel-header compact">
+          <div>
+            <span class="eyebrow">Raspberry-Pi-Installation</span>
+            <h2>Sync-Server auf dem RPi installieren</h2>
+          </div>
+        </div>
+        <div class="install-steps">
+          <p>Auf Raspberry Pi OS Lite oder einer anderen Debian-/Ubuntu-Linux-Umgebung per SSH ausführen:</p>
+          <pre class="command-block"><code>${escapeHtml(rpiInstallCommands)}</code></pre>
+          <p>Danach in dieser Ansicht als Serveradresse <code>http://&lt;rpi-ip&gt;:4173</code> eintragen, den angezeigten Sync-Token übernehmen und Verbindung testen.</p>
+        </div>
+      </div>
+      <aside class="panel panel-strong">
+        <div class="panel-header compact"><h2>RPi-Prüfung</h2></div>
+        <div class="sync-status">
+          <div><span>Dienststatus</span><strong>sudo systemctl status projektverwaltung-wtf</strong></div>
+          <div><span>Server-Test</span><strong>curl http://localhost:4173/api/health</strong></div>
+          <div><span>Konfiguration</span><strong>/etc/projektverwaltung-wtf.env</strong></div>
         </div>
       </aside>
     </section>

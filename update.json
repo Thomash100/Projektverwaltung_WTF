@@ -1,17 +1,17 @@
 {
   "product": "Projektverwaltung_WTF",
-  "version": "26.05.15.003.DEV.BETA",
+  "version": "26.05.15.004.DEV.BETA",
   "channel": "DEV.BETA",
   "stable": false,
   "releaseDate": "2026-05-15",
   "downloadUrl": "https://github.com/Thomash100/Projektverwaltung_WTF/raw/master/dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe",
-  "sha256": "B47F2D03C6392477C20385C2FD9B4F886B0B7E8A820564E4F928D6AC1E25D0DE",
-  "size": 129926768,
+  "sha256": "008622F878E48E319B54472D4FC1BF7A4DFD88810E1E89ABBA10783691319575",
+  "size": 129929840,
   "minimumRequiredVersion": "26.05.15.001.DEV.BETA",
   "notes": [
-    "Demo-/Serverbetrieb um Sync-API erweitert.",
-    "Einstellungsseite mit Serveradresse, IP-Suche, Verbindungstest und manuellem Server-Sync ergänzt.",
-    "Raspberry-Pi/Linux-Installationsvorlage mit systemd-Service ergänzt.",
-    "Dokumentation für Web-Demo, Onlinebetrieb und RPi-Sync ergänzt."
+    "RPi-Installation direkt in der App sichtbar ergänzt.",
+    "Ausführliche Raspberry-Pi-Installationsanleitung und rpi/README ergänzt.",
+    "RPi-Installationsskript zeigt Netzwerk-URL, Token, Status- und Testbefehle an.",
+    "Setup-Paket mit vollständiger RPi-Dokumentation aktualisiert."
   ]
 }

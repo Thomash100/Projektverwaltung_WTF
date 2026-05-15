@@ -12,9 +12,21 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
+if [[ ! -f "server.mjs" || ! -f "rpi/projektverwaltung-wtf.service" ]]; then
+  echo "Bitte das Skript aus dem Projektordner starten:"
+  echo "  cd Projektverwaltung_WTF"
+  echo "  sudo ./rpi/install-rpi-server.sh"
+  exit 1
+fi
+
 if ! command -v node >/dev/null 2>&1 || ! command -v rsync >/dev/null 2>&1; then
   apt-get update
   apt-get install -y nodejs rsync
+fi
+
+NODE_MAJOR="$(node -p "Number(process.versions.node.split('.')[0])" 2>/dev/null || echo 0)"
+if [[ "${NODE_MAJOR}" -lt 18 ]]; then
+  echo "Warnung: Node.js ${NODE_MAJOR} erkannt. Empfohlen ist Node.js 18 oder neuer."
 fi
 
 if ! id "${APP_USER}" >/dev/null 2>&1; then
@@ -34,7 +46,8 @@ rsync -a --delete \
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   install -m 0640 rpi/projektverwaltung-wtf.env.example "${ENV_FILE}"
-  sed -i "s/bitte-aendern/$(tr -dc A-Za-z0-9 </dev/urandom | head -c 32)/" "${ENV_FILE}"
+  GENERATED_TOKEN="$(dd if=/dev/urandom bs=24 count=1 2>/dev/null | od -An -tx1 | tr -d ' \n')"
+  sed -i "s/bitte-aendern/${GENERATED_TOKEN}/" "${ENV_FILE}"
 fi
 
 install -m 0644 rpi/projektverwaltung-wtf.service "${SERVICE_FILE}"
@@ -45,6 +58,14 @@ systemctl daemon-reload
 systemctl enable projektverwaltung-wtf.service
 systemctl restart projektverwaltung-wtf.service
 
+PORT_VALUE="$(grep -E '^PORT=' "${ENV_FILE}" | cut -d= -f2- || true)"
+TOKEN_VALUE="$(grep -E '^SYNC_TOKEN=' "${ENV_FILE}" | cut -d= -f2- || true)"
+IP_VALUE="$(hostname -I 2>/dev/null | awk '{print $1}')"
+
+echo
 echo "Projektverwaltung_WTF Sync-Server läuft."
+echo "URL im Netzwerk: http://${IP_VALUE:-<rpi-ip>}:${PORT_VALUE:-4173}"
+echo "Sync-Token: ${TOKEN_VALUE:-<leer>}"
 echo "Konfiguration: ${ENV_FILE}"
-echo "Status: systemctl status projektverwaltung-wtf.service"
+echo "Status: sudo systemctl status projektverwaltung-wtf.service"
+echo "Test: curl http://localhost:${PORT_VALUE:-4173}/api/health"
