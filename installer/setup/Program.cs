@@ -8,6 +8,8 @@ namespace ProjektverwaltungWtfSetup;
 internal static class Program
 {
     private const string AppName = "Projektverwaltung_WTF";
+    private const string AppVersion = "26.05.15.001.DEV.BETA";
+    private static readonly bool IsStable = false;
 
     [STAThread]
     private static void Main(string[] args)
@@ -17,6 +19,12 @@ internal static class Program
 
         try
         {
+            if (!options.Quiet && !ConfirmDeveloperBeta())
+            {
+                Environment.ExitCode = 2;
+                return;
+            }
+
             var installRoot = options.TargetPath ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 AppName);
@@ -36,7 +44,7 @@ internal static class Program
             if (!options.Quiet)
             {
                 MessageBox.Show(
-                    "Projektverwaltung_WTF wurde lokal installiert.\n\nDesktop- und Startmenue-Verknuepfungen wurden erstellt.",
+                    $"Projektverwaltung_WTF {AppVersion} wurde lokal installiert.\n\nDesktop- und Startmenue-Verknuepfungen wurden erstellt.",
                     "Projektverwaltung_WTF Setup",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -55,6 +63,27 @@ internal static class Program
 
             Environment.ExitCode = 1;
         }
+    }
+
+    private static bool ConfirmDeveloperBeta()
+    {
+        if (IsStable)
+        {
+            return true;
+        }
+
+        var result = MessageBox.Show(
+            $"Developer Beta - Risiken bestaetigen\n\nVersion: {AppVersion}\n\n" +
+            "Diese Installation ist eine Developer Beta und noch keine stabile Produktivversion. " +
+            "Sie ist zum Testen und Validieren gedacht. Datenmodelle, Funktionen und Berechnungen koennen sich noch aendern.\n\n" +
+            "Bitte erstellen Sie regelmaessig Sicherungen und nutzen Sie diese Version nicht ohne fachliche Pruefung fuer geschaeftskritische Originaldaten.\n\n" +
+            "Installation fortsetzen?",
+            "Projektverwaltung_WTF Setup",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2);
+
+        return result == DialogResult.Yes;
     }
 
     private static void InstallPayload(string installRoot)
@@ -110,14 +139,16 @@ internal static class Program
             desktopExe,
             "",
             installRoot,
-            "Projektverwaltung_WTF starten");
+            "Projektverwaltung_WTF starten",
+            desktopExe);
 
         CreateShortcut(
             Path.Combine(startMenuFolder, $"{AppName}.lnk"),
             desktopExe,
             "",
             installRoot,
-            "Projektverwaltung_WTF starten");
+            "Projektverwaltung_WTF starten",
+            desktopExe);
 
         CreateShortcut(
             Path.Combine(startMenuFolder, $"{AppName} deinstallieren.lnk"),
@@ -127,7 +158,7 @@ internal static class Program
             "Projektverwaltung_WTF deinstallieren");
     }
 
-    private static void CreateShortcut(string shortcutPath, string targetPath, string arguments, string workingDirectory, string description)
+    private static void CreateShortcut(string shortcutPath, string targetPath, string arguments, string workingDirectory, string description, string? iconLocation = null)
     {
         var shellType = Type.GetTypeFromProgID("WScript.Shell")
             ?? throw new InvalidOperationException("WScript.Shell ist auf diesem System nicht verfuegbar.");
@@ -140,7 +171,7 @@ internal static class Program
         shortcut.Arguments = arguments;
         shortcut.WorkingDirectory = workingDirectory;
         shortcut.Description = description;
-        shortcut.IconLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "shell32.dll") + ",21";
+        shortcut.IconLocation = iconLocation ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32", "shell32.dll") + ",21";
         shortcut.Save();
     }
 

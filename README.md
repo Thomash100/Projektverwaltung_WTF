@@ -12,7 +12,11 @@ Fuer die normale Nutzung die Windows-Setup-Datei herunterladen und ausfuehren:
 
 Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, erstellt Desktop- und Startmenue-Verknuepfungen und startet die Anwendung als richtige Windows-App mit eigenem Fenster. Die App laeuft nicht als normaler Browser-Tab.
 
-Hinweis: Die Setup-EXE ist aktuell nicht code-signiert. Windows kann deshalb eine SmartScreen-Warnung anzeigen.
+Aktuelle Version: `26.05.15.001.DEV.BETA`
+
+Beim Start prueft die App automatisch, ob unter `update.json` eine neuere Version veroeffentlicht wurde. Falls ein Update verfuegbar ist, fragt die App per Popup nach, laedt nach Bestaetigung die neue Setup-Datei herunter und startet die Installation. Zusaetzlich gibt es in der App unter `Hilfe > Nach Updates suchen` eine manuelle Pruefung.
+
+Hinweis: Diese Version ist eine Developer Beta. Setup und App zeigen deshalb eine Risiko-Bestaetigung an. Die Setup-EXE ist aktuell nicht code-signiert. Windows kann deshalb eine SmartScreen-Warnung anzeigen; dieser Windows-Hinweis kann technisch erst durch Code-Signing und wachsende Publisher-Reputation zuverlaessig reduziert werden.
 
 ## Entwicklung
 

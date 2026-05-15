@@ -1,11 +1,22 @@
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Forms;
 
 namespace ProjektverwaltungWtfDesktop;
+
+internal static class AppInfo
+{
+    public const string ProductName = "Projektverwaltung_WTF";
+    public const string Version = "26.05.15.001.DEV.BETA";
+    public const string Channel = "DEV.BETA";
+    public const bool IsStable = false;
+    public const string UpdateManifestUrl = "https://raw.githubusercontent.com/Thomash100/Projektverwaltung_WTF/master/update.json";
+    public const string SetupDownloadUrl = "https://github.com/Thomash100/Projektverwaltung_WTF/raw/master/dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe";
+}
 
 internal static class Program
 {
@@ -35,7 +46,7 @@ internal sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "Projektverwaltung_WTF";
+        Text = $"{AppInfo.ProductName} {AppInfo.Version}";
         MinimumSize = new Size(1180, 760);
         Size = new Size(1440, 930);
         StartPosition = FormStartPosition.CenterScreen;
@@ -48,7 +59,7 @@ internal sealed class MainForm : Form
         webView.DefaultBackgroundColor = Color.FromArgb(244, 246, 244);
         Controls.Add(webView);
 
-        statusLabel.Text = "Bereit";
+        statusLabel.Text = $"Version {AppInfo.Version} - Bereit";
         statusStrip.Items.Add(statusLabel);
         Controls.Add(statusStrip);
 
@@ -70,10 +81,12 @@ internal sealed class MainForm : Form
         file.DropDownItems.Add("Beenden", null, (_, _) => Close());
         view.DropDownItems.Add("Neu laden", null, (_, _) => webView.Reload());
         view.DropDownItems.Add("Startseite", null, (_, _) => webView.Source = new Uri(runtime.Url));
+        help.DropDownItems.Add("Nach Updates suchen", null, async (_, _) => await CheckForUpdatesAsync(manual: true));
+        help.DropDownItems.Add(new ToolStripSeparator());
         help.DropDownItems.Add("Info", null, (_, _) =>
         {
             MessageBox.Show(
-                "Projektverwaltung_WTF\nLokale Einzelplatz-App fuer Architektur- und Ingenieurburos.",
+                $"{AppInfo.ProductName}\nVersion {AppInfo.Version}\nKanal: {AppInfo.Channel}\n\nLokale Einzelplatz-App fuer Architektur- und Ingenieurburos.",
                 "Info",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -89,7 +102,14 @@ internal sealed class MainForm : Form
     {
         try
         {
-            statusLabel.Text = "Lokale App wird gestartet...";
+            if (!BetaDisclaimer.EnsureAccepted(this))
+            {
+                statusLabel.Text = "Developer-Beta nicht bestaetigt";
+                BeginInvoke(new Action(Close));
+                return;
+            }
+
+            statusLabel.Text = $"Version {AppInfo.Version} - lokale App wird gestartet...";
             await runtime.StartAsync();
 
             var userData = Path.Combine(
@@ -104,7 +124,9 @@ internal sealed class MainForm : Form
             webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
             webView.CoreWebView2.WebMessageReceived += HandleWebMessage;
             webView.Source = new Uri(runtime.Url);
-            statusLabel.Text = $"Lokal verbunden: {runtime.Url}";
+            statusLabel.Text = $"Version {AppInfo.Version} - lokal verbunden";
+
+            BeginInvoke(new Action(async () => await CheckForUpdatesAsync(manual: false)));
         }
         catch (Exception ex)
         {
@@ -115,6 +137,11 @@ internal sealed class MainForm : Form
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
+    }
+
+    private async Task CheckForUpdatesAsync(bool manual)
+    {
+        await AppUpdater.CheckForUpdatesAsync(this, manual, text => statusLabel.Text = text);
     }
 
     private async Task ExecuteAppScriptAsync(string script)
@@ -390,4 +417,236 @@ internal sealed record AppLayout(string InstallRoot, string AppDirectory, string
 
         return candidates.FirstOrDefault(path => !string.IsNullOrWhiteSpace(path) && File.Exists(path));
     }
+}
+
+internal static class BetaDisclaimer
+{
+    public static bool EnsureAccepted(IWin32Window owner)
+    {
+        if (AppInfo.IsStable || File.Exists(MarkerPath))
+        {
+            return true;
+        }
+
+        var result = MessageBox.Show(
+            $"Developer Beta - Risiken bestaetigen\n\nVersion: {AppInfo.Version}\n\n" +
+            "Diese Version ist eine Developer Beta und noch keine stabile Produktivversion. " +
+            "Es koennen Fehler auftreten, Datenmodelle koennen sich aendern und fachliche Berechnungen muessen vor produktiver Nutzung geprueft werden.\n\n" +
+            "Bitte verwenden Sie diese Version nicht ohne eigene Datensicherung fuer geschaeftskritische Originaldaten. " +
+            "Mit Ja bestaetigen Sie, dass Sie diese Hinweise verstanden haben und die Beta auf eigenes Risiko testen.",
+            "Projektverwaltung_WTF Developer Beta",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning,
+            MessageBoxDefaultButton.Button2);
+
+        if (result != DialogResult.Yes)
+        {
+            return false;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(MarkerPath)!);
+        File.WriteAllText(MarkerPath, DateTimeOffset.Now.ToString("O"), Encoding.UTF8);
+        return true;
+    }
+
+    private static string MarkerPath
+    {
+        get
+        {
+            var safeVersion = string.Concat(AppInfo.Version.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_'));
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                AppInfo.ProductName,
+                "confirmations",
+                $"accepted-beta-{safeVersion}.txt");
+        }
+    }
+}
+
+internal static class AppUpdater
+{
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    public static async Task CheckForUpdatesAsync(Form owner, bool manual, Action<string> setStatus)
+    {
+        try
+        {
+            setStatus(manual ? "Updatepruefung laeuft..." : $"Version {AppInfo.Version} - Updatepruefung...");
+            var manifest = await LoadManifestAsync();
+
+            if (manifest is null || string.IsNullOrWhiteSpace(manifest.Version))
+            {
+                if (manual)
+                {
+                    MessageBox.Show(owner, "Es konnte keine gueltige Update-Information gelesen werden.", AppInfo.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                return;
+            }
+
+            if (CompareVersions(manifest.Version, AppInfo.Version) <= 0)
+            {
+                if (manual)
+                {
+                    MessageBox.Show(
+                        owner,
+                        $"Die installierte Version ist aktuell.\n\nInstalliert: {AppInfo.Version}\nVerfuegbar: {manifest.Version}",
+                        "Projektverwaltung_WTF Updates",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+
+                return;
+            }
+
+            var channel = manifest.Stable ? "STABLE" : (string.IsNullOrWhiteSpace(manifest.Channel) ? "DEV.BETA" : manifest.Channel);
+            var releaseDate = string.IsNullOrWhiteSpace(manifest.ReleaseDate) ? "" : $"\nFreigabe: {manifest.ReleaseDate}";
+            var notes = manifest.Notes.Length == 0 ? "" : "\n\nAenderungen:\n- " + string.Join("\n- ", manifest.Notes.Take(6));
+
+            var answer = MessageBox.Show(
+                owner,
+                $"Ein Update ist verfuegbar.\n\nInstalliert: {AppInfo.Version}\nNeu: {manifest.Version} ({channel}){releaseDate}{notes}\n\n" +
+                "Soll das Update jetzt heruntergeladen und das Setup gestartet werden?\nDie Anwendung wird danach geschlossen.",
+                "Projektverwaltung_WTF Update",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+
+            if (answer == DialogResult.Yes)
+            {
+                await DownloadAndLaunchInstallerAsync(owner, manifest, setStatus);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (manual)
+            {
+                MessageBox.Show(
+                    owner,
+                    $"Die Updatepruefung konnte nicht abgeschlossen werden.\n\n{ex.Message}",
+                    "Projektverwaltung_WTF Updates",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+        finally
+        {
+            setStatus($"Version {AppInfo.Version} - Bereit");
+        }
+    }
+
+    private static async Task<UpdateManifest?> LoadManifestAsync()
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+        var separator = AppInfo.UpdateManifestUrl.Contains('?') ? '&' : '?';
+        var url = $"{AppInfo.UpdateManifestUrl}{separator}t={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+        using var response = await client.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<UpdateManifest>(json, JsonOptions);
+    }
+
+    private static async Task DownloadAndLaunchInstallerAsync(Form owner, UpdateManifest manifest, Action<string> setStatus)
+    {
+        var downloadUrl = string.IsNullOrWhiteSpace(manifest.DownloadUrl) ? AppInfo.SetupDownloadUrl : manifest.DownloadUrl;
+        var target = Path.Combine(Path.GetTempPath(), $"{AppInfo.ProductName}_Setup_{SanitizeFileName(manifest.Version)}.exe");
+
+        setStatus("Update wird heruntergeladen...");
+        using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        var bytes = await client.GetByteArrayAsync(downloadUrl);
+
+        if (!string.IsNullOrWhiteSpace(manifest.Sha256))
+        {
+            var hash = Convert.ToHexString(SHA256.HashData(bytes));
+            if (!hash.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Die heruntergeladene Setup-Datei passt nicht zur veroeffentlichten Pruefsumme.");
+            }
+        }
+
+        await File.WriteAllBytesAsync(target, bytes);
+        setStatus("Setup wird gestartet...");
+
+        var command = $"/c timeout /t 2 /nobreak >nul & start \"\" \"{target}\"";
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = command,
+            CreateNoWindow = true,
+            UseShellExecute = false
+        });
+
+        MessageBox.Show(
+            owner,
+            "Das Update-Setup wurde heruntergeladen und wird gleich gestartet.\n\nProjektverwaltung_WTF wird jetzt geschlossen.",
+            "Projektverwaltung_WTF Update",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
+
+        owner.BeginInvoke(new Action(owner.Close));
+    }
+
+    private static int CompareVersions(string left, string right)
+    {
+        var leftParts = ExtractNumericVersion(left);
+        var rightParts = ExtractNumericVersion(right);
+        var count = Math.Max(leftParts.Length, rightParts.Length);
+
+        for (var i = 0; i < count; i++)
+        {
+            var l = i < leftParts.Length ? leftParts[i] : 0;
+            var r = i < rightParts.Length ? rightParts[i] : 0;
+            if (l != r)
+            {
+                return l.CompareTo(r);
+            }
+        }
+
+        return ChannelRank(left).CompareTo(ChannelRank(right));
+    }
+
+    private static int[] ExtractNumericVersion(string version)
+    {
+        var numericPrefix = new string(version.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray()).Trim('.');
+        if (string.IsNullOrWhiteSpace(numericPrefix))
+        {
+            return [];
+        }
+
+        return numericPrefix
+            .Split('.', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => int.TryParse(part, out var number) ? number : 0)
+            .ToArray();
+    }
+
+    private static int ChannelRank(string version)
+    {
+        var value = version.ToUpperInvariant();
+        if (value.Contains("STABLE")) return 3;
+        if (value.Contains("RC")) return 2;
+        if (value.Contains("BETA")) return 1;
+        if (value.Contains("DEV")) return 0;
+        return 1;
+    }
+
+    private static string SanitizeFileName(string value)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        return string.Concat(value.Select(ch => invalid.Contains(ch) ? '_' : ch));
+    }
+}
+
+internal sealed class UpdateManifest
+{
+    public string Product { get; set; } = "";
+    public string Version { get; set; } = "";
+    public string Channel { get; set; } = "";
+    public bool Stable { get; set; }
+    public string ReleaseDate { get; set; } = "";
+    public string DownloadUrl { get; set; } = "";
+    public string Sha256 { get; set; } = "";
+    public long Size { get; set; }
+    public string[] Notes { get; set; } = [];
 }
