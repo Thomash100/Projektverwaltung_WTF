@@ -1,0 +1,12 @@
+{
+  "name": "projektverwaltung-wtf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lokale Erstversion einer professionellen Buero-Plattform fuer Architektur- und Ingenieurburos.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "check": "node --check server.mjs && node --check src/data.js && node --check src/app.js"
+  }
+}

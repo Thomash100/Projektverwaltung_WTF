@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Projektverwaltung_WTF web prototype
+node_modules/
+dist/
+*.log
+*-preview.png
+projektverwaltung-wtf-export.json
