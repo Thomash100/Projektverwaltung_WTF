@@ -2,28 +2,21 @@
 
 Professionelle Erstversion einer zentralen Buero-Plattform fuer Architektur- und Ingenieurburos in der Baubranche.
 
-Die Anwendung ist als lokale, abhaengigkeitsfreie Web-App umgesetzt. Sie kann sofort gestartet werden und bildet die wichtigsten Domaenen ab: Projekte, Mitarbeiter, Arbeitszeiten, Angebote, HOAI-orientierte Honorarkalkulation, Vertraege, Nachtraege, Abrechnung, Dokumente, Plaene, Berechnungen, Schriftverkehr, Protokolle, Aktennotizen, Handlungsempfehlungen, Aufgaben, Fristen, Terminplaene, Controlling, Benutzerrechte, Backup, Lizenzierung und spaetere KI/API-Anbindungen.
+Die Anwendung ist als lokale Windows-Desktop-App umgesetzt. Sie installiert eine eigene `Projektverwaltung_WTF.exe`, startet in einem eigenen Fenster und bringt die benoetigte Runtime fuer den Einzelplatzbetrieb mit. Abgebildet werden die wichtigsten Domaenen: Projekte, Mitarbeiter, Arbeitszeiten, Angebote, HOAI-orientierte Honorarkalkulation, Vertraege, Nachtraege, Abrechnung, Dokumente, Plaene, Berechnungen, Schriftverkehr, Protokolle, Aktennotizen, Handlungsempfehlungen, Aufgaben, Fristen, Terminplaene, Controlling, Benutzerrechte, Backup, Lizenzierung und spaetere KI-/API-Anbindungen.
 
 ## Start
 
-```powershell
-cd "D:\Users\ThomasHofmann\Documents\New project\Projektverwaltung_WTF"
-.\start.cmd
-```
+Fuer die normale Nutzung die Windows-Setup-Datei herunterladen und ausfuehren:
 
-Falls `node server.mjs` nicht funktioniert, ist Node.js nicht im Windows-PATH. `start.cmd` sucht automatisch nach einer vorhandenen Runtime, unter anderem aus der lokalen Einzelplatzinstallation.
+[Projektverwaltung_WTF_Setup_Einzelplatz.exe](dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe)
 
-Danach im Browser oeffnen:
+Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, erstellt Desktop- und Startmenue-Verknuepfungen und startet die Anwendung als richtige Windows-App mit eigenem Fenster. Die App laeuft nicht als normaler Browser-Tab.
 
-```text
-http://localhost:4173
-```
+Hinweis: Die Setup-EXE ist aktuell nicht code-signiert. Windows kann deshalb eine SmartScreen-Warnung anzeigen.
 
-Alternativ kann `index.html` direkt geoeffnet werden. Der lokale Server ist fuer spaetere API- und Desktop-Integration aber der bessere Weg.
+## Entwicklung
 
-## Windows-Setup
-
-Eine lokale Einzelplatz-Setup-EXE kann mit folgendem Befehl erzeugt werden:
+Die Desktop-App und die Setup-EXE koennen lokal neu gebaut werden:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\build-setup.ps1
@@ -35,7 +28,15 @@ Das Ergebnis liegt danach hier:
 dist\Projektverwaltung_WTF_Setup_Einzelplatz.exe
 ```
 
-Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, bringt eine eigene Node-Runtime mit und erstellt Desktop- sowie Startmenue-Verknuepfungen. Gestartet wird eine richtige Windows-Desktop-App mit eigenem Fenster auf Basis von WebView2; die Anwendung laeuft nicht als normaler Browser-Tab.
+Fuer reine UI-/Server-Entwicklung kann die lokale Entwicklungsumgebung ohne Installer gestartet werden:
+
+```powershell
+.\start.cmd
+```
+
+Falls `node server.mjs` nicht funktioniert, ist Node.js nicht im Windows-PATH. `start.cmd` sucht automatisch nach einer vorhandenen Runtime.
+
+Dieser lokale Start ist nur fuer Entwicklung und Fehlersuche gedacht. Fuer Anwender ist die Windows-Setup-EXE der richtige Weg.
 
 ## Aktueller Umfang
 
