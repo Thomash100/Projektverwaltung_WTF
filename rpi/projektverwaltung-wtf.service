@@ -1,0 +1,21 @@
+[Unit]
+Description=Projektverwaltung_WTF Sync Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/projektverwaltung-wtf
+EnvironmentFile=/etc/projektverwaltung-wtf.env
+ExecStart=/usr/bin/node /opt/projektverwaltung-wtf/server.mjs
+Restart=always
+RestartSec=5
+User=projektwtf
+Group=projektwtf
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/projektverwaltung-wtf
+
+[Install]
+WantedBy=multi-user.target

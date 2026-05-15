@@ -2,7 +2,7 @@
 
 ## Zielbild
 
-Projektverwaltung_WTF soll langfristig als kommerzielle Buero-Plattform funktionieren. Die erste Version ist bewusst lokal und einfach startbar, aber entlang einer Architektur geschnitten, die spaeter Backend, Desktop-App, Mehrplatzbetrieb und API-Anbindungen aufnehmen kann.
+Projektverwaltung_WTF soll langfristig als kommerzielle Büro-Plattform funktionieren. Die erste Version ist bewusst lokal und einfach startbar, aber entlang einer Architektur geschnitten, die später Backend, Desktop-App, Mehrplatzbetrieb und API-Anbindungen aufnehmen kann.
 
 ## Schichten
 
@@ -22,19 +22,19 @@ flowchart TD
 
 ## Frontend
 
-- Aktuell: Vanilla HTML/CSS/JavaScript ohne externe Abhaengigkeiten.
+- Aktuell: Vanilla HTML/CSS/JavaScript ohne externe Abhängigkeiten.
 - Ziel: React/Vue/Svelte oder Tauri/Electron-Frontend, sobald die Produktlogik stabiler ist.
-- UI-Prinzip: Arbeitsoberflaeche statt Landingpage, dichte Informationen, kurze Wege, klare Projektakte.
+- UI-Prinzip: Arbeitsoberfläche statt Landingpage, dichte Informationen, kurze Wege, klare Projektakte.
 
 ## Backend
 
 Empfohlener Ausbau:
 
 - API: TypeScript/Node, .NET oder Python/FastAPI.
-- Datenbank: PostgreSQL fuer Mehrplatzbetrieb, SQLite fuer Einzelplatz/offline.
-- Dateien: lokaler verschluesselter Speicher plus S3-kompatibles Offsite-Backup.
-- Suche: PostgreSQL Full Text oder OpenSearch spaeter.
-- Jobs: Backup, Lizenzpruefung, Fristenmonitor, Dokumentenindexierung.
+- Datenbank: PostgreSQL für Mehrplatzbetrieb, SQLite für Einzelplatz/offline.
+- Dateien: lokaler verschlüsselter Speicher plus S3-kompatibles Offsite-Backup.
+- Suche: PostgreSQL Full Text oder OpenSearch später.
+- Jobs: Backup, Lizenzprüfung, Fristenmonitor, Dokumentenindexierung.
 
 ## Einzelplatz und Mehrplatz
 
@@ -43,14 +43,14 @@ Einzelplatz:
 - Lokale Datenbank.
 - Lokaler Dateispeicher.
 - Aktivierbare Lizenzdatei.
-- Optionales verschluesseltes Backup.
+- Optionales verschlüsseltes Backup.
 
 Mehrplatz:
 
 - Zentraler Server oder gehostete Instanz.
 - Rollen, Mandanten, Sperren und Audit-Log.
-- Konfliktarme Synchronisation fuer mobile/offline Clients.
-- Protokollierte Aenderungen an Honoraren, Vertragen und Rechnungen.
+- Konfliktarme Synchronisation für mobile/offline Clients.
+- Protokollierte Änderungen an Honoraren, Verträgen und Rechnungen.
 
 ## KI/API
 
@@ -59,5 +59,5 @@ Die KI-Anbindung sollte nicht direkt auf Rohdaten zugreifen. Empfohlen ist eine 
 - expliziten Nutzerrechten,
 - dokumentierten Tool-Endpunkten,
 - Datenminimierung,
-- Audit-Log fuer KI-Aktionen,
-- Freigabe-Workflow fuer externe Kommunikation und Vertragsinhalte.
+- Audit-Log für KI-Aktionen,
+- Freigabe-Workflow für externe Kommunikation und Vertragsinhalte.

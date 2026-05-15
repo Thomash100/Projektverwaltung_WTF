@@ -214,7 +214,7 @@ export const seedData = {
     {
       id: "T-101",
       projectId: "P-24017",
-      title: "Positionsplaene mit Brandschutzabgleich einfrieren",
+      title: "Positionspläne mit Brandschutzabgleich einfrieren",
       assignee: "Oskar Brandt",
       status: "in Arbeit",
       due: "2026-05-18",
@@ -559,7 +559,7 @@ export const seedData = {
       target: "Lokaler verschlüsselter Tresor",
       lastRun: "2026-05-14 22:00",
       status: "ok",
-      retention: "30 taeglich / 12 monatlich"
+      retention: "30 täglich / 12 monatlich"
     },
     {
       id: "B-2",

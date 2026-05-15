@@ -4,7 +4,7 @@
 
 - `Project`: Projektstamm, Auftraggeber, Leistungsbild, Phasen, Budget, Risiko, Status.
 - `Employee`: Mitarbeiter, Rolle, Stundensatz, Auslastung, Rechte.
-- `TimeEntry`: Zeitbuchung mit Projekt, Phase, Taetigkeit, Abrechenbarkeit.
+- `TimeEntry`: Zeitbuchung mit Projekt, Phase, Tätigkeit, Abrechenbarkeit.
 - `Offer`: Angebot, Honorarbasis, Leistungsphasen, Nebenkosten, Nachlass.
 - `Contract`: Vertrag, Version, Beauftragungsstand, Abrechnungsart.
 - `Addendum`: Nachtrag, Betrag, Status, Bindefrist.
@@ -14,7 +14,7 @@
 - `Task`: Aufgabe mit Frist, Status, Verantwortlichem und Bereich.
 - `Milestone`: Terminplan und verbindliche Fristen.
 - `Role`: Berechtigungsprofil.
-- `AuditLog`: protokollierte sicherheits- und abrechnungsrelevante Aenderungen.
+- `AuditLog`: protokollierte sicherheits- und abrechnungsrelevante Änderungen.
 
 ## Beziehungen
 
@@ -36,7 +36,7 @@ erDiagram
 ## Prinzipien
 
 - Finanzdaten und Vertragsdaten sind versioniert.
-- Dokumente werden nicht ueberschrieben, sondern revisioniert.
+- Dokumente werden nicht überschrieben, sondern revisioniert.
 - Rollen steuern Sichtbarkeit und Aktionen getrennt.
-- KI-Funktionen erhalten nur den minimal noetigen Kontext.
-- Alle produktiven Aenderungen an Honorar, Vertrag, Rechnung und Rechten gehoeren ins Audit-Log.
+- KI-Funktionen erhalten nur den minimal nötigen Kontext.
+- Alle produktiven Änderungen an Honorar, Vertrag, Rechnung und Rechten gehören ins Audit-Log.

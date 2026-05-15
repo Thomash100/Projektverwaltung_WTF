@@ -1,17 +1,17 @@
 {
   "product": "Projektverwaltung_WTF",
-  "version": "26.05.15.002.DEV.BETA",
+  "version": "26.05.15.003.DEV.BETA",
   "channel": "DEV.BETA",
   "stable": false,
   "releaseDate": "2026-05-15",
   "downloadUrl": "https://github.com/Thomash100/Projektverwaltung_WTF/raw/master/dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe",
-  "sha256": "5D95CB1CBA171396C9228CBE4F1391B504A6629EE9FBC9A72226D41DAECD0FAF",
-  "size": 129918576,
+  "sha256": "B47F2D03C6392477C20385C2FD9B4F886B0B7E8A820564E4F928D6AC1E25D0DE",
+  "size": 129926768,
   "minimumRequiredVersion": "26.05.15.001.DEV.BETA",
   "notes": [
-    "Kontextbezogene Hilfe je Ansicht ergänzt.",
-    "Deutschsprachige Oberfläche auf echte Umlaute und ß umgestellt.",
-    "Windows-Hilfemenü kann die kontextbezogene Hilfe direkt öffnen.",
-    "Update-Testversion für bestehende 26.05.15.001.DEV.BETA-Installationen."
+    "Demo-/Serverbetrieb um Sync-API erweitert.",
+    "Einstellungsseite mit Serveradresse, IP-Suche, Verbindungstest und manuellem Server-Sync ergänzt.",
+    "Raspberry-Pi/Linux-Installationsvorlage mit systemd-Service ergänzt.",
+    "Dokumentation für Web-Demo, Onlinebetrieb und RPi-Sync ergänzt."
   ]
 }

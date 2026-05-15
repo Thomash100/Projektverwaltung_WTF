@@ -1,19 +1,19 @@
 # Roadmap
 
-## Phase 1 - Arbeitsfaehiger Prototyp
+## Phase 1 - Arbeitsfähiger Prototyp
 
 - Zentrales Dashboard.
 - Projektakte, Aufgaben, Fristen, Zeiten.
 - HOAI-orientierte Kalkulationsmaske.
-- Vertrags-, Nachtrags- und Dokumentenuebersicht.
+- Vertrags-, Nachtrags- und Dokumentenübersicht.
 - Lokale Speicherung und Export.
 
 ## Phase 2 - Produktiver Einzelplatzbetrieb
 
 - Persistente SQLite-Datenbank.
-- Benutzerkonto mit lokaler Verschluesselung.
+- Benutzerkonto mit lokaler Verschlüsselung.
 - Dokumentenablage mit Versionierung.
-- Rechnungsentwuerfe und Leistungsstandsermittlung.
+- Rechnungsentwürfe und Leistungsstandsermittlung.
 - Backup-Assistent und Wiederherstellungstest.
 - Lizenzdatei mit Aktivierung.
 
@@ -21,16 +21,16 @@
 
 - Server-Backend mit PostgreSQL.
 - Rollen, Projektteams und Audit-Log.
-- Sperr- und Freigabeworkflows fuer Dokumente.
+- Sperr- und Freigabeworkflows für Dokumente.
 - Synchronisation zwischen Clients.
 - E-Mail- und Kalenderintegration.
-- Volltextsuche ueber Dokumente, Protokolle und Aktennotizen.
+- Volltextsuche über Dokumente, Protokolle und Aktennotizen.
 
 ## Phase 4 - Kommerzielle Plattform
 
-- Mandantenfaehigkeit.
+- Mandantenfähigkeit.
 - Installer, Updates und Telemetrie mit Opt-in.
 - DATEV/FiBu-Schnittstelle.
 - Kunden- und Planerportal.
-- KI-Assistent fuer Protokolle, Risiken, Nachtraege und Handlungsempfehlungen.
-- Oeffentliche API mit Webhooks.
+- KI-Assistent für Protokolle, Risiken, Nachträge und Handlungsempfehlungen.
+- Öffentliche API mit Webhooks.

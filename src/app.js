@@ -2,6 +2,7 @@ import { honorarProfiles, honorarZones, seedData } from "./data.js";
 
 const STORAGE_KEY = "projektverwaltung-wtf-state-v1";
 const HELP_KEY = "projektverwaltung-wtf-help-open";
+const SYNC_SETTINGS_KEY = "projektverwaltung-wtf-sync-settings-v1";
 const app = document.querySelector("#app");
 const today = new Date("2026-05-15T00:00:00");
 
@@ -17,7 +18,8 @@ const routes = [
   ["schedule", "Terminplan", "calendar"],
   ["controlling", "Controlling", "chart"],
   ["security", "Rechte & Sicherheit", "lock"],
-  ["integrations", "KI & API", "plug"]
+  ["integrations", "KI & API", "plug"],
+  ["settings", "Einstellungen", "settings"]
 ];
 
 const contextHelpByRoute = {
@@ -140,6 +142,16 @@ const contextHelpByRoute = {
       "KI-Funktionen erst nach stabiler Datenstruktur anbinden."
     ],
     tips: ["Schnittstellen sollten erst nach stabilen Rollen-, Dokumenten- und Projektmodellen produktiv werden."]
+  },
+  settings: {
+    title: "Einstellungen und Server-Sync",
+    summary: "Hier wird ein Raspberry-Pi- oder Büroserver im Netzwerk gesucht, geprüft und als Synchronisationsziel hinterlegt.",
+    steps: [
+      "IP-Adresse oder Serveradresse manuell eintragen oder einen IP-Bereich scannen.",
+      "Verbindung testen und optional einen Sync-Token eintragen.",
+      "Daten gezielt zum Server hochladen oder vom Server laden."
+    ],
+    tips: ["Für Internetzugriff unterwegs bitte HTTPS, VPN oder Tailscale/WireGuard einsetzen und die Sync-API nicht ungeschützt veröffentlichen."]
   }
 };
 
@@ -153,6 +165,10 @@ const state = {
   dirty: false,
   status: "Bereit",
   helpOpen: window.localStorage.getItem(HELP_KEY) === "1",
+  sync: loadSyncSettings(),
+  syncStatus: "Noch nicht verbunden",
+  syncBusy: false,
+  discoveredServers: [],
   hoai: {
     profileId: "building",
     zoneId: "III",
@@ -181,6 +197,38 @@ function loadData() {
 
 function persist() {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+}
+
+function defaultSyncEndpoint() {
+  const hostName = window.location.hostname;
+  if (hostName && hostName !== "localhost" && hostName !== "127.0.0.1") {
+    return `${window.location.protocol}//${window.location.host}`;
+  }
+
+  return "";
+}
+
+function loadSyncSettings() {
+  const defaults = {
+    endpoint: defaultSyncEndpoint(),
+    token: "",
+    scanPrefix: "192.168.178",
+    scanPort: 4173,
+    scanStart: 2,
+    scanEnd: 254,
+    autoSync: false,
+    lastSync: ""
+  };
+
+  try {
+    return { ...defaults, ...JSON.parse(window.localStorage.getItem(SYNC_SETTINGS_KEY) || "{}") };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveSyncSettings(settings = state.sync) {
+  window.localStorage.setItem(SYNC_SETTINGS_KEY, JSON.stringify(settings));
 }
 
 function normalizeData(data) {
@@ -298,6 +346,8 @@ function icon(name) {
       '<path d="M6 10V8a6 6 0 1 1 12 0v2h2v12H4V10h2Zm2 0h8V8a4 4 0 0 0-8 0v2Zm3 4v4h2v-4h-2Z"/>',
     plug:
       '<path d="M8 2h2v5h4V2h2v5h2v4a6 6 0 0 1-5 5.9V22h-2v-5.1A6 6 0 0 1 6 11V7h2V2Zm0 7v2a4 4 0 1 0 8 0V9H8Z"/>',
+    settings:
+      '<path d="m19.4 13.5.1-1.5-.1-1.5 2-1.5-2-3.4-2.4 1a8 8 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.6A8 8 0 0 0 7 6.6l-2.4-1-2 3.4 2 1.5-.1 1.5.1 1.5-2 1.5 2 3.4 2.4-1a8 8 0 0 0 2.6 1.5l.4 2.6h4l.4-2.6a8 8 0 0 0 2.6-1.5l2.4 1 2-3.4-2-1.5ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/>',
     plus:
       '<path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7V4Z"/>',
     refresh:
@@ -491,6 +541,14 @@ function ribbonContextGroup() {
       items: [
         ["new-project", "Projekt", "building", "Basis anlegen"],
         ["save-file", "Sichern", "save", "Kalkulationsstand"]
+      ]
+    },
+    settings: {
+      title: "Server",
+      items: [
+        ["discover-sync-servers", "Suchen", "settings", "Server im Netzwerk suchen"],
+        ["test-sync-server", "Testen", "plug", "Verbindung prüfen"],
+        ["push-sync", "Sync", "save", "Zum Server hochladen"]
       ]
     }
   };
@@ -781,7 +839,8 @@ function renderMain() {
     schedule: renderSchedule,
     controlling: renderControlling,
     security: renderSecurity,
-    integrations: renderIntegrations
+    integrations: renderIntegrations,
+    settings: renderSettings
   };
 
   return (renderers[state.route] || renderDashboard)();
@@ -1252,7 +1311,7 @@ function renderContracts() {
         <div class="panel-header">
           <div>
             <span class="eyebrow">Verträge</span>
-            <h2>Auftraege und Abrechnung</h2>
+            <h2>Aufträge und Abrechnung</h2>
           </div>
         </div>
         <div class="data-table">
@@ -1524,7 +1583,7 @@ function renderSecurity() {
         </div>
       </div>
       <div class="panel">
-        <div class="panel-header compact"><h2>Backup & Verschluesselung</h2></div>
+        <div class="panel-header compact"><h2>Backup & Verschlüsselung</h2></div>
         ${state.data.backups.map((backup) => `
           <article class="record">
             <div>
@@ -1579,8 +1638,76 @@ function renderIntegrations() {
           <code>POST /api/time-entries</code>
           <code>POST /api/honorars/calculate</code>
           <code>GET /api/documents/:projectId</code>
+          <code>PUT /api/sync/state</code>
           <code>POST /api/ai/recommendations</code>
         </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderSettings() {
+  const sync = state.sync;
+  return `
+    <section class="layout-two wide-left">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Server-Synchronisation</span>
+            <h2>RPi- oder Büroserver einrichten</h2>
+          </div>
+          <span class="pill ${state.syncBusy ? "tone-warning" : "tone-neutral"}">${escapeHtml(state.syncStatus)}</span>
+        </div>
+        <form class="settings-form" data-form="sync-settings">
+          <div class="settings-grid">
+            ${field("endpoint", "Serveradresse / IP", sync.endpoint || "", "text")}
+            ${field("token", "Sync-Token", sync.token || "", "password")}
+            ${field("scanPrefix", "IP-Suchbereich", sync.scanPrefix || "192.168.178", "text")}
+            ${field("scanPort", "Port", sync.scanPort || 4173, "number")}
+            ${field("scanStart", "Start-IP", sync.scanStart || 2, "number")}
+            ${field("scanEnd", "End-IP", sync.scanEnd || 254, "number")}
+          </div>
+          <label class="checkbox-line"><input name="autoSync" type="checkbox" ${sync.autoSync ? "checked" : ""} /> automatische Synchronisation vorbereiten</label>
+          <div class="settings-actions">
+            <button class="primary-action" type="submit">${icon("save")} Einstellungen speichern</button>
+            <button class="icon-button text-button" type="button" data-action="test-sync-server">${icon("plug")} Verbindung testen</button>
+            <button class="icon-button text-button" type="button" data-action="discover-sync-servers">${icon("settings")} Server suchen</button>
+            <button class="icon-button text-button" type="button" data-action="push-sync">${icon("save")} Zum Server hochladen</button>
+            <button class="icon-button text-button" type="button" data-action="pull-sync">${icon("open")} Vom Server laden</button>
+          </div>
+        </form>
+      </div>
+      <aside class="panel panel-strong">
+        <div class="panel-header compact"><h2>Status</h2></div>
+        <div class="sync-status">
+          <div><span>Aktiver Server</span><strong>${escapeHtml(sync.endpoint || "nicht gesetzt")}</strong></div>
+          <div><span>Letzter Sync</span><strong>${escapeHtml(sync.lastSync || "noch nie")}</strong></div>
+          <div><span>Browser-Demo</span><strong>${desktopBridgeAvailable() ? "Windows-App" : "Web-/Browserbetrieb"}</strong></div>
+        </div>
+        <div class="notice">
+          <strong>Hinweis</strong>
+          <span>Für unterwegs bitte nicht ungeschützt ins Internet stellen. Sicherer ist Zugriff per VPN, Tailscale/WireGuard oder HTTPS-Reverse-Proxy mit Authentifizierung.</span>
+        </div>
+      </aside>
+    </section>
+    <section class="panel">
+      <div class="panel-header compact">
+        <h2>Gefundene Server</h2>
+      </div>
+      <div class="server-list">
+        ${
+          state.discoveredServers.length
+            ? state.discoveredServers.map((server) => `
+                <article class="server-card">
+                  <div>
+                    <strong>${escapeHtml(server.endpoint)}</strong>
+                    <span>${escapeHtml(server.mode)} · ${escapeHtml(server.version || "")}</span>
+                  </div>
+                  <button class="icon-button text-button" type="button" data-action="use-discovered-server" data-endpoint="${escapeHtml(server.endpoint)}">Verwenden</button>
+                </article>
+              `).join("")
+            : emptyState("Noch kein Server gefunden. IP-Bereich eintragen und Suche starten.")
+        }
       </div>
     </section>
   `;
@@ -1646,6 +1773,201 @@ function toggleContextHelp() {
   render();
 }
 
+function normalizeEndpoint(value) {
+  const trimmed = String(value || "").trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `http://${trimmed}`;
+}
+
+function clampIpPart(value, fallback) {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) return fallback;
+  return Math.max(1, Math.min(254, Math.round(numberValue)));
+}
+
+function readSyncSettingsForm() {
+  const form = document.querySelector('[data-form="sync-settings"]');
+  if (!form) return state.sync;
+  const data = Object.fromEntries(new FormData(form).entries());
+  const next = {
+    ...state.sync,
+    endpoint: normalizeEndpoint(data.endpoint),
+    token: String(data.token || ""),
+    scanPrefix: String(data.scanPrefix || "192.168.178").trim().replace(/\.$/, ""),
+    scanPort: Math.max(1, Math.min(65535, Number(data.scanPort || 4173))),
+    scanStart: clampIpPart(data.scanStart, 2),
+    scanEnd: clampIpPart(data.scanEnd, 254),
+    autoSync: data.autoSync === "on"
+  };
+  if (next.scanStart > next.scanEnd) {
+    [next.scanStart, next.scanEnd] = [next.scanEnd, next.scanStart];
+  }
+
+  state.sync = next;
+  saveSyncSettings();
+  return next;
+}
+
+function syncHeaders() {
+  const headers = { Accept: "application/json" };
+  if (state.sync.token) {
+    headers["X-Sync-Token"] = state.sync.token;
+  }
+  return headers;
+}
+
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 1200) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      mode: "cors",
+      ...options,
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || `HTTP ${response.status}`);
+    }
+    return await response.json();
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function syncRequest(path, options = {}) {
+  const endpoint = normalizeEndpoint(state.sync.endpoint);
+  if (!endpoint) {
+    throw new Error("Bitte zuerst eine Serveradresse eintragen.");
+  }
+
+  const headers = {
+    ...syncHeaders(),
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...(options.headers || {})
+  };
+
+  return await fetchJsonWithTimeout(`${endpoint}${path}`, { ...options, headers }, options.timeoutMs || 10000);
+}
+
+function setSyncBusy(message) {
+  state.syncBusy = true;
+  state.syncStatus = message;
+  render();
+}
+
+function setSyncDone(message) {
+  state.syncBusy = false;
+  state.syncStatus = message;
+  render();
+}
+
+async function testSyncServer() {
+  readSyncSettingsForm();
+  try {
+    setSyncBusy("Verbindung wird geprüft...");
+    const result = await syncRequest("/api/health", { timeoutMs: 3000 });
+    setSyncDone(`${result.product || "Server"} ${result.version || ""} erreichbar`);
+  } catch (error) {
+    setSyncDone(`Verbindung fehlgeschlagen: ${error.message}`);
+  }
+}
+
+function discoveryCandidates(settings) {
+  const candidates = new Set();
+  if (settings.endpoint) candidates.add(normalizeEndpoint(settings.endpoint));
+  candidates.add(`http://projektverwaltung-wtf.local:${settings.scanPort || 4173}`);
+  candidates.add(`http://raspberrypi.local:${settings.scanPort || 4173}`);
+
+  if (settings.scanPrefix) {
+    for (let ip = settings.scanStart; ip <= settings.scanEnd; ip += 1) {
+      candidates.add(`http://${settings.scanPrefix}.${ip}:${settings.scanPort || 4173}`);
+    }
+  }
+
+  return [...candidates];
+}
+
+async function probeSyncServer(endpoint) {
+  try {
+    const result = await fetchJsonWithTimeout(`${endpoint}/api/health`, { headers: syncHeaders() }, 850);
+    if (result.product !== "Projektverwaltung_WTF") return null;
+    return {
+      endpoint,
+      version: result.version || "",
+      mode: result.mode || "server",
+      syncEnabled: Boolean(result.syncEnabled)
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function discoverSyncServers() {
+  const settings = readSyncSettingsForm();
+  setSyncBusy("Netzwerk wird durchsucht...");
+  const candidates = discoveryCandidates(settings);
+  const found = [];
+  let index = 0;
+  const workers = Array.from({ length: Math.min(24, candidates.length) }, async () => {
+    while (index < candidates.length) {
+      const endpoint = candidates[index];
+      index += 1;
+      const result = await probeSyncServer(endpoint);
+      if (result) found.push(result);
+    }
+  });
+
+  await Promise.all(workers);
+  state.discoveredServers = found.sort((a, b) => a.endpoint.localeCompare(b.endpoint));
+  setSyncDone(found.length ? `${found.length} Server gefunden` : "Kein Server gefunden");
+}
+
+async function pushSyncState() {
+  readSyncSettingsForm();
+  try {
+    setSyncBusy("Daten werden zum Server übertragen...");
+    const result = await syncRequest("/api/sync/state", {
+      method: "PUT",
+      body: JSON.stringify(projectFilePayload()),
+      timeoutMs: 15000
+    });
+    state.sync.lastSync = result.savedAt || new Date().toISOString();
+    saveSyncSettings();
+    state.dirty = false;
+    state.status = "Mit Server synchronisiert";
+    setSyncDone(`Gespeichert: ${state.sync.lastSync}`);
+  } catch (error) {
+    setSyncDone(`Sync fehlgeschlagen: ${error.message}`);
+  }
+}
+
+async function pullSyncState() {
+  readSyncSettingsForm();
+  if (!window.confirm("Daten vom Server laden und lokale Browserdaten ersetzen?")) return;
+
+  try {
+    setSyncBusy("Daten werden vom Server geladen...");
+    const result = await syncRequest("/api/sync/state", { timeoutMs: 15000 });
+    if (!result.payload?.data) {
+      throw new Error("Auf dem Server ist noch kein Projektstand gespeichert.");
+    }
+
+    state.data = normalizeData(result.payload.data);
+    state.selectedProjectId = state.data.projects[0]?.id || "";
+    state.dirty = false;
+    state.status = "Vom Server geladen";
+    state.sync.lastSync = result.savedAt || new Date().toISOString();
+    saveSyncSettings();
+    persist();
+    setSyncDone(`Geladen: ${state.sync.lastSync}`);
+  } catch (error) {
+    setSyncDone(`Laden fehlgeschlagen: ${error.message}`);
+  }
+}
+
 document.addEventListener("click", (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
@@ -1667,6 +1989,18 @@ document.addEventListener("click", (event) => {
   const actionName = action.dataset.action;
   if (actionName === "toggle-help") {
     toggleContextHelp();
+    return;
+  }
+
+  if (actionName === "test-sync-server") return testSyncServer();
+  if (actionName === "discover-sync-servers") return discoverSyncServers();
+  if (actionName === "push-sync") return pushSyncState();
+  if (actionName === "pull-sync") return pullSyncState();
+  if (actionName === "use-discovered-server") {
+    state.sync.endpoint = action.dataset.endpoint || state.sync.endpoint;
+    state.syncStatus = "Server übernommen";
+    saveSyncSettings();
+    render();
     return;
   }
 
@@ -1761,6 +2095,13 @@ document.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const data = Object.fromEntries(new FormData(form).entries());
+  if (form.dataset.form === "sync-settings") {
+    readSyncSettingsForm();
+    state.syncStatus = "Einstellungen gespeichert";
+    render();
+    return;
+  }
+
   if (form.dataset.form === "project") {
     const project = {
       id: `P-${Date.now().toString().slice(-5)}`,
@@ -1981,7 +2322,7 @@ function deleteActiveProject() {
     ...state.data.contracts.filter((item) => item.projectId === project.id)
   ];
   const message = linkedItems.length
-    ? `Projekt "${project.name}" hat ${linkedItems.length} verknüpfte Eintraege. Trotzdem löschen?`
+    ? `Projekt "${project.name}" hat ${linkedItems.length} verknüpfte Einträge. Trotzdem löschen?`
     : `Projekt "${project.name}" löschen?`;
   if (!window.confirm(message)) return;
   state.data.projects = state.data.projects.filter((item) => item.id !== project.id);

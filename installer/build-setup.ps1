@@ -70,7 +70,8 @@ Copy-Item -LiteralPath `
 Copy-Item -LiteralPath `
   (Join-Path $root "src"), `
   (Join-Path $root "docs"), `
-  (Join-Path $root "database") `
+  (Join-Path $root "database"), `
+  (Join-Path $root "rpi") `
   -Destination (Join-Path $payload "app") `
   -Recurse `
   -Force
