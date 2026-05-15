@@ -1,18 +1,17 @@
 {
   "product": "Projektverwaltung_WTF",
-  "version": "26.05.15.001.DEV.BETA",
+  "version": "26.05.15.002.DEV.BETA",
   "channel": "DEV.BETA",
   "stable": false,
   "releaseDate": "2026-05-15",
   "downloadUrl": "https://github.com/Thomash100/Projektverwaltung_WTF/raw/master/dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe",
-  "sha256": "7E3C2CE1CC61C60E76D5F3FB32E2C8AB39EFBD1DB5C751E8C522B9D5C80FF7FE",
-  "size": 129915504,
+  "sha256": "5D95CB1CBA171396C9228CBE4F1391B504A6629EE9FBC9A72226D41DAECD0FAF",
+  "size": 129918576,
   "minimumRequiredVersion": "26.05.15.001.DEV.BETA",
   "notes": [
-    "Versionierung als Developer-Beta eingefuehrt.",
-    "Automatische Updatepruefung beim App-Start und manuelle Updatepruefung im Hilfe-Menue.",
-    "Update-Download mit SHA256-Pruefung und Setup-Start nach Benutzerbestaetigung.",
-    "Developer-Beta-Risiko-Bestaetigung in Setup und App.",
-    "Eigenes Windows-App-Icon fuer EXE, Setup und Verknuepfungen."
+    "Kontextbezogene Hilfe je Ansicht ergänzt.",
+    "Deutschsprachige Oberfläche auf echte Umlaute und ß umgestellt.",
+    "Windows-Hilfemenü kann die kontextbezogene Hilfe direkt öffnen.",
+    "Update-Testversion für bestehende 26.05.15.001.DEV.BETA-Installationen."
   ]
 }

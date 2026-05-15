@@ -277,6 +277,12 @@ button {
   padding: 0;
 }
 
+.icon-button.is-active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+}
+
 .primary-action {
   background: var(--green);
   border-color: var(--green);
@@ -356,6 +362,61 @@ button {
 
 .ribbon-status strong {
   color: var(--ink);
+}
+
+.context-help {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid #cbd8d3;
+  border-left: 4px solid var(--green);
+  border-radius: 8px;
+  background: #f7faf8;
+  box-shadow: var(--shadow);
+}
+
+.context-help-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.context-help h2,
+.context-help p {
+  margin: 0;
+}
+
+.context-help p {
+  max-width: 980px;
+  color: var(--muted);
+}
+
+.context-help small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  gap: 16px;
+}
+
+.help-grid strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.help-steps,
+.help-tips {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
 }
 
 .metric-grid,
@@ -1063,6 +1124,7 @@ button.table-row {
   .employee-grid,
   .license-grid,
   .calculator-grid,
+  .help-grid,
   .form-grid,
   .phase-grid,
   .kanban,

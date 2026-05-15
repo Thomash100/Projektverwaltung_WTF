@@ -8,9 +8,9 @@
     <AssemblyName>Projektverwaltung_WTF_Setup_Einzelplatz</AssemblyName>
     <RootNamespace>ProjektverwaltungWtfSetup</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <AssemblyVersion>26.5.15.1</AssemblyVersion>
-    <FileVersion>26.5.15.1</FileVersion>
-    <InformationalVersion>26.05.15.001.DEV.BETA</InformationalVersion>
+    <AssemblyVersion>26.5.15.2</AssemblyVersion>
+    <FileVersion>26.5.15.2</FileVersion>
+    <InformationalVersion>26.05.15.002.DEV.BETA</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\..\build-installer\payload.zip" LogicalName="payload.zip" />

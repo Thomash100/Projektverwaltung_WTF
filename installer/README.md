@@ -1,6 +1,6 @@
 # Installer
 
-Diese Dateien erzeugen eine lokale Einzelplatz-Installation fuer Windows.
+Diese Dateien erzeugen eine lokale Einzelplatz-Installation für Windows.
 
 Das fertige Setup wird unter `dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe` erstellt und installiert die Anwendung nach `%LOCALAPPDATA%\Projektverwaltung_WTF`.
 

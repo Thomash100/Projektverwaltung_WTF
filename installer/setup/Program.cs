@@ -8,7 +8,7 @@ namespace ProjektverwaltungWtfSetup;
 internal static class Program
 {
     private const string AppName = "Projektverwaltung_WTF";
-    private const string AppVersion = "26.05.15.001.DEV.BETA";
+    private const string AppVersion = "26.05.15.002.DEV.BETA";
     private static readonly bool IsStable = false;
 
     [STAThread]
@@ -44,7 +44,7 @@ internal static class Program
             if (!options.Quiet)
             {
                 MessageBox.Show(
-                    $"Projektverwaltung_WTF {AppVersion} wurde lokal installiert.\n\nDesktop- und Startmenue-Verknuepfungen wurden erstellt.",
+                    $"Projektverwaltung_WTF {AppVersion} wurde lokal installiert.\n\nDesktop- und Startmenü-Verknüpfungen wurden erstellt.",
                     "Projektverwaltung_WTF Setup",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -73,10 +73,10 @@ internal static class Program
         }
 
         var result = MessageBox.Show(
-            $"Developer Beta - Risiken bestaetigen\n\nVersion: {AppVersion}\n\n" +
+            $"Developer Beta - Risiken bestätigen\n\nVersion: {AppVersion}\n\n" +
             "Diese Installation ist eine Developer Beta und noch keine stabile Produktivversion. " +
-            "Sie ist zum Testen und Validieren gedacht. Datenmodelle, Funktionen und Berechnungen koennen sich noch aendern.\n\n" +
-            "Bitte erstellen Sie regelmaessig Sicherungen und nutzen Sie diese Version nicht ohne fachliche Pruefung fuer geschaeftskritische Originaldaten.\n\n" +
+            "Sie ist zum Testen und Validieren gedacht. Datenmodelle, Funktionen und Berechnungen können sich noch ändern.\n\n" +
+            "Bitte erstellen Sie regelmäßig Sicherungen und nutzen Sie diese Version nicht ohne fachliche Prüfung für geschäftskritische Originaldaten.\n\n" +
             "Installation fortsetzen?",
             "Projektverwaltung_WTF Setup",
             MessageBoxButtons.YesNo,
@@ -161,7 +161,7 @@ internal static class Program
     private static void CreateShortcut(string shortcutPath, string targetPath, string arguments, string workingDirectory, string description, string? iconLocation = null)
     {
         var shellType = Type.GetTypeFromProgID("WScript.Shell")
-            ?? throw new InvalidOperationException("WScript.Shell ist auf diesem System nicht verfuegbar.");
+            ?? throw new InvalidOperationException("WScript.Shell ist auf diesem System nicht verfügbar.");
 
         dynamic shell = Activator.CreateInstance(shellType)
             ?? throw new InvalidOperationException("WScript.Shell konnte nicht gestartet werden.");

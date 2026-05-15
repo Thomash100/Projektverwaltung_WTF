@@ -62,5 +62,5 @@ New-AppShortcut `
 
 Start-Process -FilePath $desktopExe -WorkingDirectory $installRoot
 
-$message = "Projektverwaltung_WTF wurde lokal installiert.`n`nDesktop- und Startmenue-Verknuepfungen wurden erstellt."
+$message = "Projektverwaltung_WTF wurde lokal installiert.`n`nDesktop- und Startmenü-Verknüpfungen wurden erstellt."
 $null = $shell.Popup($message, 8, "Projektverwaltung_WTF Setup", 64)

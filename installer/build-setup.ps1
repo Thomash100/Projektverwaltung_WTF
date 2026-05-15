@@ -49,7 +49,7 @@ try {
     -o $desktopBuild
 
   if ($LASTEXITCODE -ne 0) {
-    throw "dotnet publish fuer die Desktop-App ist mit Exitcode $LASTEXITCODE fehlgeschlagen."
+    throw "dotnet publish für die Desktop-App ist mit Exitcode $LASTEXITCODE fehlgeschlagen."
   }
 }
 finally {

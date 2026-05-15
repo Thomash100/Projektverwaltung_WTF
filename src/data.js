@@ -16,9 +16,9 @@ export const seedData = {
       number: "24-017",
       name: "Neubau Feuerwache Nord",
       client: "Stadt Nordheim",
-      address: "Industriestrasse 18, 74172 Nordheim",
-      discipline: "Objektplanung Gebaeude",
-      phase: "LPH 5 Ausfuehrungsplanung",
+      address: "Industriestraße 18, 74172 Nordheim",
+      discipline: "Objektplanung Gebäude",
+      phase: "LPH 5 Ausführungsplanung",
       status: "in Arbeit",
       risk: "mittel",
       priority: "hoch",
@@ -44,7 +44,7 @@ export const seedData = {
       number: "25-004",
       name: "Sanierung Berufskolleg West",
       client: "Kreisbauverwaltung West",
-      address: "Schulweg 9, 50668 Koeln",
+      address: "Schulweg 9, 50668 Köln",
       discipline: "TGA Elektro",
       phase: "LPH 3 Entwurfsplanung",
       status: "kritisch",
@@ -72,7 +72,7 @@ export const seedData = {
       number: "25-009",
       name: "Wohnquartier am Park",
       client: "Bauwert Rhein GmbH",
-      address: "Parkallee 42, 40474 Duesseldorf",
+      address: "Parkallee 42, 40474 Düsseldorf",
       discipline: "Tragwerksplanung",
       phase: "LPH 4 Genehmigungsplanung",
       status: "in Arbeit",
@@ -98,7 +98,7 @@ export const seedData = {
     {
       id: "P-25013",
       number: "25-013",
-      name: "Laborgebaeude BioTech Campus",
+      name: "Laborgebäude BioTech Campus",
       client: "BioTech Campus AG",
       address: "Forschungsring 3, 69120 Heidelberg",
       discipline: "Projektsteuerung",
@@ -162,7 +162,7 @@ export const seedData = {
       id: "E-04",
       name: "Nora Stein",
       role: "Controlling",
-      team: "Bueroleitung",
+      team: "Büroleitung",
       weeklyHours: 32,
       costRate: 70,
       billRate: 118,
@@ -187,7 +187,7 @@ export const seedData = {
       name: "Thomas Hofmann",
       employeeId: "E-04",
       email: "thomas.hofmann@example.local",
-      role: "Bueroleitung",
+      role: "Büroleitung",
       status: "aktiv",
       lastLogin: "2026-05-15"
     },
@@ -234,7 +234,7 @@ export const seedData = {
     {
       id: "T-103",
       projectId: "P-25009",
-      title: "Pruefstatiker-Kommentare in Nachweisheft einarbeiten",
+      title: "Prüfstatiker-Kommentare in Nachweisheft einarbeiten",
       assignee: "Murat Aydin",
       status: "in Arbeit",
       due: "2026-05-24",
@@ -266,7 +266,7 @@ export const seedData = {
     {
       id: "D-301",
       projectId: "P-24017",
-      title: "Abgabe Ausfuehrungsplanung Bauteil A",
+      title: "Abgabe Ausführungsplanung Bauteil A",
       date: "2026-05-29",
       type: "Planlieferung",
       binding: true
@@ -303,7 +303,7 @@ export const seedData = {
       projectId: "P-24017",
       employee: "Lena Vogt",
       phase: "LPH 5",
-      activity: "Planpruefung und Koordination",
+      activity: "Planprüfung und Koordination",
       hours: 6.5,
       billable: true
     },
@@ -374,7 +374,7 @@ export const seedData = {
     {
       id: "N-710",
       projectId: "P-24017",
-      title: "Nachtrag 01 - geaenderte Fahrzeughalle",
+      title: "Nachtrag 01 - geänderte Fahrzeughalle",
       amount: 38600,
       status: "angeboten",
       due: "2026-05-31"
@@ -382,7 +382,7 @@ export const seedData = {
     {
       id: "N-711",
       projectId: "P-25004",
-      title: "Nachtrag 02 - zusaetzliche Bestandsaufnahme",
+      title: "Nachtrag 02 - zusätzliche Bestandsaufnahme",
       amount: 18400,
       status: "beauftragt",
       due: "2026-06-03"
@@ -392,7 +392,7 @@ export const seedData = {
       projectId: "P-25009",
       title: "Nachtrag 01 - Tiefgarage Variante B",
       amount: 42750,
-      status: "in Pruefung",
+      status: "in Prüfung",
       due: "2026-06-11"
     }
   ],
@@ -424,7 +424,7 @@ export const seedData = {
       type: "Berechnung",
       revision: "A",
       owner: "Murat Aydin",
-      status: "Prueflauf",
+      status: "Prüflauf",
       updated: "2026-05-10"
     },
     {
@@ -445,7 +445,7 @@ export const seedData = {
       date: "2026-05-14",
       channel: "E-Mail",
       from: "Stadt Nordheim",
-      subject: "Freigabe geaenderte Fahrzeughalle",
+      subject: "Freigabe geänderte Fahrzeughalle",
       decision: "Entscheidung liegt vor",
       owner: "Lena Vogt"
     },
@@ -474,14 +474,14 @@ export const seedData = {
     {
       id: "HE-1",
       projectId: "P-25004",
-      title: "Nachtrag fuer zusaetzliche Bestandsaufnahme absichern",
-      impact: "Honorar +18.400 EUR, Risiko Stundenueberlauf sinkt",
+      title: "Nachtrag für zusätzliche Bestandsaufnahme absichern",
+      impact: "Honorar +18.400 EUR, Risiko Stundenüberlauf sinkt",
       urgency: "hoch"
     },
     {
       id: "HE-2",
       projectId: "P-24017",
-      title: "LPH-5-Planlieferung vor interner Kollision pruefen",
+      title: "LPH-5-Planlieferung vor interner Kollision prüfen",
       impact: "Vermeidet Revisionsschleife vor Abgabe",
       urgency: "mittel"
     },
@@ -489,7 +489,7 @@ export const seedData = {
       id: "HE-3",
       projectId: "P-25013",
       title: "Angebot in zwei Optionen trennen",
-      impact: "Bessere Vergleichbarkeit fuer Bauherr und Einkauf",
+      impact: "Bessere Vergleichbarkeit für Bauherr und Einkauf",
       urgency: "mittel"
     }
   ],
@@ -525,7 +525,7 @@ export const seedData = {
   ],
   roles: [
     {
-      name: "Bueroleitung",
+      name: "Büroleitung",
       projects: "alle",
       finances: "voll",
       documents: "voll",
@@ -556,7 +556,7 @@ export const seedData = {
   backups: [
     {
       id: "B-1",
-      target: "Lokaler verschluesselter Tresor",
+      target: "Lokaler verschlüsselter Tresor",
       lastRun: "2026-05-14 22:00",
       status: "ok",
       retention: "30 taeglich / 12 monatlich"
@@ -593,7 +593,7 @@ export const seedData = {
     {
       name: "DMS/Dateiserver",
       status: "geplant",
-      scope: "Dokumente, Plaene, Versionen"
+      scope: "Dokumente, Pläne, Versionen"
     },
     {
       name: "DATEV/FiBu",
@@ -616,7 +616,7 @@ export const seedData = {
 export const honorarProfiles = [
   {
     id: "building",
-    name: "Objektplanung Gebaeude",
+    name: "Objektplanung Gebäude",
     basePercent: 0.071,
     phases: [
       ["LPH 1", 2],
@@ -645,7 +645,7 @@ export const honorarProfiles = [
   },
   {
     id: "technical",
-    name: "Technische Ausruestung",
+    name: "Technische Ausrüstung",
     basePercent: 0.086,
     phases: [
       ["LPH 1", 2],

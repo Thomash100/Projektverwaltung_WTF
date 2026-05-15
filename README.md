@@ -1,26 +1,28 @@
 # Projektverwaltung_WTF
 
-Professionelle Erstversion einer zentralen Buero-Plattform fuer Architektur- und Ingenieurburos in der Baubranche.
+Professionelle Erstversion einer zentralen Büro-Plattform für Architektur- und Ingenieurbüros in der Baubranche.
 
-Die Anwendung ist als lokale Windows-Desktop-App umgesetzt. Sie installiert eine eigene `Projektverwaltung_WTF.exe`, startet in einem eigenen Fenster und bringt die benoetigte Runtime fuer den Einzelplatzbetrieb mit. Abgebildet werden die wichtigsten Domaenen: Projekte, Mitarbeiter, Arbeitszeiten, Angebote, HOAI-orientierte Honorarkalkulation, Vertraege, Nachtraege, Abrechnung, Dokumente, Plaene, Berechnungen, Schriftverkehr, Protokolle, Aktennotizen, Handlungsempfehlungen, Aufgaben, Fristen, Terminplaene, Controlling, Benutzerrechte, Backup, Lizenzierung und spaetere KI-/API-Anbindungen.
+Die Anwendung ist als lokale Windows-Desktop-App umgesetzt. Sie installiert eine eigene `Projektverwaltung_WTF.exe`, startet in einem eigenen Fenster und bringt die benoetigte Runtime für den Einzelplatzbetrieb mit. Abgebildet werden die wichtigsten Domaenen: Projekte, Mitarbeiter, Arbeitszeiten, Angebote, HOAI-orientierte Honorarkalkulation, Verträge, Nachträge, Abrechnung, Dokumente, Pläne, Berechnungen, Schriftverkehr, Protokolle, Aktennotizen, Handlungsempfehlungen, Aufgaben, Fristen, Terminplaene, Controlling, Benutzerrechte, Backup, Lizenzierung und spätere KI-/API-Anbindungen.
 
 ## Start
 
-Fuer die normale Nutzung die Windows-Setup-Datei herunterladen und ausfuehren:
+Für die normale Nutzung die Windows-Setup-Datei herunterladen und ausfuehren:
 
 [Projektverwaltung_WTF_Setup_Einzelplatz.exe](dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe)
 
-Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, erstellt Desktop- und Startmenue-Verknuepfungen und startet die Anwendung als richtige Windows-App mit eigenem Fenster. Die App laeuft nicht als normaler Browser-Tab.
+Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, erstellt Desktop- und Startmenü-Verknüpfungen und startet die Anwendung als richtige Windows-App mit eigenem Fenster. Die App läuft nicht als normaler Browser-Tab.
 
-Aktuelle Version: `26.05.15.001.DEV.BETA`
+Aktuelle Version: `26.05.15.002.DEV.BETA`
 
-Beim Start prueft die App automatisch, ob unter `update.json` eine neuere Version veroeffentlicht wurde. Falls ein Update verfuegbar ist, fragt die App per Popup nach, laedt nach Bestaetigung die neue Setup-Datei herunter und startet die Installation. Zusaetzlich gibt es in der App unter `Hilfe > Nach Updates suchen` eine manuelle Pruefung.
+Beim Start prüft die App automatisch, ob unter `update.json` eine neuere Version veröffentlicht wurde. Falls ein Update verfügbar ist, fragt die App per Popup nach, lädt nach Bestätigung die neue Setup-Datei herunter und startet die Installation. Zusätzlich gibt es in der App unter `Hilfe > Nach Updates suchen` eine manuelle Prüfung.
 
-Hinweis: Diese Version ist eine Developer Beta. Setup und App zeigen deshalb eine Risiko-Bestaetigung an. Die Setup-EXE ist aktuell nicht code-signiert. Windows kann deshalb eine SmartScreen-Warnung anzeigen; dieser Windows-Hinweis kann technisch erst durch Code-Signing und wachsende Publisher-Reputation zuverlaessig reduziert werden.
+Die Anwendung enthält eine kontextbezogene Hilfe. Sie kann in der Windows-App über `Hilfe > Kontextbezogene Hilfe`, über die Hilfe-Schaltfläche in der Multifunktionsleiste oder per `F1` ein- und ausgeblendet werden.
+
+Hinweis: Diese Version ist eine Developer Beta. Setup und App zeigen deshalb eine Risiko-Bestätigung an. Die Setup-EXE ist aktuell nicht code-signiert. Windows kann deshalb eine SmartScreen-Warnung anzeigen; dieser Windows-Hinweis kann technisch erst durch Code-Signing und wachsende Publisher-Reputation zuverlässig reduziert werden.
 
 ## Entwicklung
 
-Die Desktop-App und die Setup-EXE koennen lokal neu gebaut werden:
+Die Desktop-App und die Setup-EXE können lokal neu gebaut werden:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\build-setup.ps1
@@ -32,7 +34,7 @@ Das Ergebnis liegt danach hier:
 dist\Projektverwaltung_WTF_Setup_Einzelplatz.exe
 ```
 
-Fuer reine UI-/Server-Entwicklung kann die lokale Entwicklungsumgebung ohne Installer gestartet werden:
+Für reine UI-/Server-Entwicklung kann die lokale Entwicklungsumgebung ohne Installer gestartet werden:
 
 ```powershell
 .\start.cmd
@@ -40,18 +42,18 @@ Fuer reine UI-/Server-Entwicklung kann die lokale Entwicklungsumgebung ohne Inst
 
 Falls `node server.mjs` nicht funktioniert, ist Node.js nicht im Windows-PATH. `start.cmd` sucht automatisch nach einer vorhandenen Runtime.
 
-Dieser lokale Start ist nur fuer Entwicklung und Fehlersuche gedacht. Fuer Anwender ist die Windows-Setup-EXE der richtige Weg.
+Dieser lokale Start ist nur für Entwicklung und Fehlersuche gedacht. Für Anwender ist die Windows-Setup-EXE der richtige Weg.
 
 ## Aktueller Umfang
 
 - Zentrales Dashboard mit Portfolio-KPIs, aktivem Projekt, Fristen, Aufgaben und Handlungsempfehlungen.
-- Kontextabhaengige Multifunktionsleiste mit Datei-, Projekt-, Team-, Aufgaben- und Dokumentaktionen.
-- Projektakte mit Projektanlage, Bearbeitung, Duplizieren, Loeschen, Leistungsstand, Honorar, Stundenverbrauch, Risiko, Auftraggeber und Tags.
+- Kontextabhängige Multifunktionsleiste mit Datei-, Projekt-, Team-, Aufgaben- und Dokumentaktionen.
+- Projektakte mit Projektanlage, Bearbeitung, Duplizieren, Löschen, Leistungsstand, Honorar, Stundenverbrauch, Risiko, Auftraggeber und Tags.
 - Mitarbeiter-, Benutzer- und Zeiterfassung mit lokalen Buchungen und Rollenbezug.
-- Projektdateien nativ oeffnen und speichern in der Windows-App; Browser-Fallback per JSON-Export/-Import.
-- Dokumente und Plaene registrieren und mit lokalen Dateipfaden verknuepfen.
+- Projektdateien nativ öffnen und speichern in der Windows-App; Browser-Fallback per JSON-Export/-Import.
+- Dokumente und Pläne registrieren und mit lokalen Dateipfaden verknuepfen.
 - HOAI-orientierte Angebots- und Honorarmaske mit Leistungsbild, Honorarzone, Leistungsphasen, Nebenkosten und Nachlass.
-- Vertrags-, Nachtrags- und Abrechnungsuebersicht.
+- Vertrags-, Nachtrags- und Abrechnungsübersicht.
 - Dokumenten- und Planliste mit Revision, Status und Verantwortlichen.
 - Schriftverkehr, Protokolle und Aktennotizen.
 - Aufgabenboard, Fristenliste und Terminplan.
@@ -61,7 +63,7 @@ Dieser lokale Start ist nur fuer Entwicklung und Fehlersuche gedacht. Fuer Anwen
 
 ## Wichtige fachliche Setzung
 
-Die Honorarkalkulation ist bewusst konfigurierbar und nicht als verbindliche Rechts- oder Steuerberatung implementiert. Fuer eine kommerzielle Version muessen HOAI-Tabellen, Vertragslogik, Umsatzsteuer, Archivierung und Rechnungslegung fachlich und rechtlich validiert werden.
+Die Honorarkalkulation ist bewusst konfigurierbar und nicht als verbindliche Rechts- oder Steuerberatung implementiert. Für eine kommerzielle Version müssen HOAI-Tabellen, Vertragslogik, Umsatzsteuer, Archivierung und Rechnungslegung fachlich und rechtlich validiert werden.
 
 ## Projektstruktur
 
@@ -82,11 +84,11 @@ Projektverwaltung_WTF/
     schema.sql
 ```
 
-## Naechste technische Ausbaustufe
+## Nächste technische Ausbaustufe
 
-1. Backend mit PostgreSQL oder SQLite-Sync-Schicht einfuehren.
+1. Backend mit PostgreSQL oder SQLite-Sync-Schicht einführen.
 2. Authentifizierung, Mandanten, Rollen und Audit-Log produktiv machen.
 3. Dokumentenspeicher mit Versionierung und Volltextsuche anbinden.
-4. Rechnungs- und Vertragsmodul mit pruefbaren Workflows ausbauen.
-5. Desktop-Verpackung fuer Einzelplatzbetrieb und Server-Sync fuer Mehrplatzbetrieb ergaenzen.
-6. KI-Assistent ueber dokumentierte API-Schicht anbinden.
+4. Rechnungs- und Vertragsmodul mit prüfbaren Workflows ausbauen.
+5. Desktop-Verpackung für Einzelplatzbetrieb und Server-Sync für Mehrplatzbetrieb ergänzen.
+6. KI-Assistent über dokumentierte API-Schicht anbinden.

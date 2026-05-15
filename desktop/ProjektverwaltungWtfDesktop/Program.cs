@@ -11,7 +11,7 @@ namespace ProjektverwaltungWtfDesktop;
 internal static class AppInfo
 {
     public const string ProductName = "Projektverwaltung_WTF";
-    public const string Version = "26.05.15.001.DEV.BETA";
+    public const string Version = "26.05.15.002.DEV.BETA";
     public const string Channel = "DEV.BETA";
     public const bool IsStable = false;
     public const string UpdateManifestUrl = "https://raw.githubusercontent.com/Thomash100/Projektverwaltung_WTF/master/update.json";
@@ -74,19 +74,20 @@ internal sealed class MainForm : Form
         var view = new ToolStripMenuItem("&Ansicht");
         var help = new ToolStripMenuItem("&Hilfe");
 
-        file.DropDownItems.Add("Oeffnen", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.openFile?.()"));
+        file.DropDownItems.Add("Öffnen", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.openFile?.()"));
         file.DropDownItems.Add("Speichern", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.saveFile?.()"));
         file.DropDownItems.Add("Speichern unter", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.saveFileAs?.()"));
         file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add("Beenden", null, (_, _) => Close());
         view.DropDownItems.Add("Neu laden", null, (_, _) => webView.Reload());
         view.DropDownItems.Add("Startseite", null, (_, _) => webView.Source = new Uri(runtime.Url));
+        help.DropDownItems.Add("Kontextbezogene Hilfe", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.toggleHelp?.()"));
         help.DropDownItems.Add("Nach Updates suchen", null, async (_, _) => await CheckForUpdatesAsync(manual: true));
         help.DropDownItems.Add(new ToolStripSeparator());
         help.DropDownItems.Add("Info", null, (_, _) =>
         {
             MessageBox.Show(
-                $"{AppInfo.ProductName}\nVersion {AppInfo.Version}\nKanal: {AppInfo.Channel}\n\nLokale Einzelplatz-App fuer Architektur- und Ingenieurburos.",
+                $"{AppInfo.ProductName}\nVersion {AppInfo.Version}\nKanal: {AppInfo.Channel}\n\nLokale Einzelplatz-App für Architektur- und Ingenieurbüros.",
                 "Info",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -104,7 +105,7 @@ internal sealed class MainForm : Form
         {
             if (!BetaDisclaimer.EnsureAccepted(this))
             {
-                statusLabel.Text = "Developer-Beta nicht bestaetigt";
+                statusLabel.Text = "Developer-Beta nicht bestätigt";
                 BeginInvoke(new Action(Close));
                 return;
             }
@@ -215,7 +216,7 @@ internal sealed class MainForm : Form
     {
         using var dialog = new OpenFileDialog
         {
-            Title = "Projektverwaltung_WTF oeffnen",
+            Title = "Projektverwaltung_WTF öffnen",
             Filter = "Projektverwaltung_WTF (*.wtf.json)|*.wtf.json|JSON-Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*",
             CheckFileExists = true
         };
@@ -429,11 +430,11 @@ internal static class BetaDisclaimer
         }
 
         var result = MessageBox.Show(
-            $"Developer Beta - Risiken bestaetigen\n\nVersion: {AppInfo.Version}\n\n" +
+            $"Developer Beta - Risiken bestätigen\n\nVersion: {AppInfo.Version}\n\n" +
             "Diese Version ist eine Developer Beta und noch keine stabile Produktivversion. " +
-            "Es koennen Fehler auftreten, Datenmodelle koennen sich aendern und fachliche Berechnungen muessen vor produktiver Nutzung geprueft werden.\n\n" +
-            "Bitte verwenden Sie diese Version nicht ohne eigene Datensicherung fuer geschaeftskritische Originaldaten. " +
-            "Mit Ja bestaetigen Sie, dass Sie diese Hinweise verstanden haben und die Beta auf eigenes Risiko testen.",
+            "Es können Fehler auftreten, Datenmodelle können sich ändern und fachliche Berechnungen müssen vor produktiver Nutzung geprüft werden.\n\n" +
+            "Bitte verwenden Sie diese Version nicht ohne eigene Datensicherung für geschäftskritische Originaldaten. " +
+            "Mit Ja bestätigen Sie, dass Sie diese Hinweise verstanden haben und die Beta auf eigenes Risiko testen.",
             "Projektverwaltung_WTF Developer Beta",
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Warning,
@@ -474,14 +475,14 @@ internal static class AppUpdater
     {
         try
         {
-            setStatus(manual ? "Updatepruefung laeuft..." : $"Version {AppInfo.Version} - Updatepruefung...");
+            setStatus(manual ? "Updateprüfung läuft..." : $"Version {AppInfo.Version} - Updateprüfung...");
             var manifest = await LoadManifestAsync();
 
             if (manifest is null || string.IsNullOrWhiteSpace(manifest.Version))
             {
                 if (manual)
                 {
-                    MessageBox.Show(owner, "Es konnte keine gueltige Update-Information gelesen werden.", AppInfo.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(owner, "Es konnte keine gültige Update-Information gelesen werden.", AppInfo.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
 
                 return;
@@ -493,7 +494,7 @@ internal static class AppUpdater
                 {
                     MessageBox.Show(
                         owner,
-                        $"Die installierte Version ist aktuell.\n\nInstalliert: {AppInfo.Version}\nVerfuegbar: {manifest.Version}",
+                        $"Die installierte Version ist aktuell.\n\nInstalliert: {AppInfo.Version}\nVerfügbar: {manifest.Version}",
                         "Projektverwaltung_WTF Updates",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Information);
@@ -504,11 +505,11 @@ internal static class AppUpdater
 
             var channel = manifest.Stable ? "STABLE" : (string.IsNullOrWhiteSpace(manifest.Channel) ? "DEV.BETA" : manifest.Channel);
             var releaseDate = string.IsNullOrWhiteSpace(manifest.ReleaseDate) ? "" : $"\nFreigabe: {manifest.ReleaseDate}";
-            var notes = manifest.Notes.Length == 0 ? "" : "\n\nAenderungen:\n- " + string.Join("\n- ", manifest.Notes.Take(6));
+            var notes = manifest.Notes.Length == 0 ? "" : "\n\nÄnderungen:\n- " + string.Join("\n- ", manifest.Notes.Take(6));
 
             var answer = MessageBox.Show(
                 owner,
-                $"Ein Update ist verfuegbar.\n\nInstalliert: {AppInfo.Version}\nNeu: {manifest.Version} ({channel}){releaseDate}{notes}\n\n" +
+                $"Ein Update ist verfügbar.\n\nInstalliert: {AppInfo.Version}\nNeu: {manifest.Version} ({channel}){releaseDate}{notes}\n\n" +
                 "Soll das Update jetzt heruntergeladen und das Setup gestartet werden?\nDie Anwendung wird danach geschlossen.",
                 "Projektverwaltung_WTF Update",
                 MessageBoxButtons.YesNo,
@@ -525,7 +526,7 @@ internal static class AppUpdater
             {
                 MessageBox.Show(
                     owner,
-                    $"Die Updatepruefung konnte nicht abgeschlossen werden.\n\n{ex.Message}",
+                    $"Die Updateprüfung konnte nicht abgeschlossen werden.\n\n{ex.Message}",
                     "Projektverwaltung_WTF Updates",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning);
@@ -562,7 +563,7 @@ internal static class AppUpdater
             var hash = Convert.ToHexString(SHA256.HashData(bytes));
             if (!hash.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("Die heruntergeladene Setup-Datei passt nicht zur veroeffentlichten Pruefsumme.");
+                throw new InvalidOperationException("Die heruntergeladene Setup-Datei passt nicht zur veröffentlichten Prüfsumme.");
             }
         }
 

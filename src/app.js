@@ -1,16 +1,17 @@
 import { honorarProfiles, honorarZones, seedData } from "./data.js";
 
 const STORAGE_KEY = "projektverwaltung-wtf-state-v1";
+const HELP_KEY = "projektverwaltung-wtf-help-open";
 const app = document.querySelector("#app");
 const today = new Date("2026-05-15T00:00:00");
 
 const routes = [
-  ["dashboard", "Uebersicht", "dashboard"],
+  ["dashboard", "Übersicht", "dashboard"],
   ["projects", "Projekte", "building"],
   ["team", "Team & Zeiten", "users"],
   ["honorar", "Angebote & Honorar", "calculator"],
-  ["contracts", "Vertraege & Nachtraege", "file"],
-  ["documents", "Dokumente & Plaene", "folder"],
+  ["contracts", "Verträge & Nachträge", "file"],
+  ["documents", "Dokumente & Pläne", "folder"],
   ["communication", "Schriftverkehr", "message"],
   ["tasks", "Aufgaben & Fristen", "check"],
   ["schedule", "Terminplan", "calendar"],
@@ -18,6 +19,129 @@ const routes = [
   ["security", "Rechte & Sicherheit", "lock"],
   ["integrations", "KI & API", "plug"]
 ];
+
+const contextHelpByRoute = {
+  dashboard: {
+    title: "Übersicht",
+    summary: "Die Übersicht bündelt Portfolio-KPIs, das aktive Projekt, Fristen, Aufgaben und aktuelle Handlungsempfehlungen.",
+    steps: [
+      "Projekt über die linke Liste oder den Projektauswahlschalter aktivieren.",
+      "Offene Fristen und Aufgaben im rechten Projektbereich prüfen.",
+      "Neue Projekte oder Schnellaufgaben direkt über die Multifunktionsleiste anlegen."
+    ],
+    tips: ["Die Suche filtert Projekte nach Nummer, Name, Auftraggeber, Leistungsbild, Projektleitung und Status."]
+  },
+  projects: {
+    title: "Projektakte",
+    summary: "Hier werden Stammdaten, Leistungsstand, Stundenbudget, Risiko und Projektstatus gepflegt.",
+    steps: [
+      "Mit Neu ein Projekt anlegen oder mit Bearbeiten das aktive Projekt ändern.",
+      "Duplizieren nutzt das aktive Projekt als Vorlage für wiederkehrende Bürostandards.",
+      "Löschen entfernt auch zugehörige Aufgaben, Fristen, Zeiten, Dokumente, Verträge und Nachträge."
+    ],
+    tips: ["Vor dem Löschen immer die Projektdatei speichern oder exportieren."]
+  },
+  team: {
+    title: "Team und Zeiten",
+    summary: "Diese Ansicht verwaltet Mitarbeiter, Benutzerkonten, Auslastung und lokale Zeitbuchungen.",
+    steps: [
+      "Mitarbeiter mit Funktion, Team, Kosten- und Abrechnungssatz erfassen.",
+      "Bei Bedarf direkt ein Benutzerkonto mit Rollenbezug anlegen.",
+      "Zeitbuchungen projektbezogen erfassen, damit Stundenverbrauch und Controlling aktuell bleiben."
+    ],
+    tips: ["Rollen werden in Rechte & Sicherheit zentral gepflegt und hier als Auswahl verwendet."]
+  },
+  honorar: {
+    title: "Angebote und Honorar",
+    summary: "Die Kalkulation ist HOAI-orientiert, bleibt aber bewusst konfigurierbar und fachlich prüfpflichtig.",
+    steps: [
+      "Leistungsbild, Honorarzone und anrechenbare Kosten wählen.",
+      "Leistungsphasen aktivieren, die angeboten oder beauftragt werden.",
+      "Nebenkosten, Satzfaktor und Nachlass prüfen, bevor das Angebot gespeichert wird."
+    ],
+    tips: ["Die Werte sind keine Rechtsberatung und müssen vor produktiver Nutzung validiert werden."]
+  },
+  contracts: {
+    title: "Verträge und Nachträge",
+    summary: "Verträge, Nachträge und Abrechnungsstände werden projektbezogen sichtbar gemacht.",
+    steps: [
+      "Aktive Verträge und Angebotsstände je Projekt vergleichen.",
+      "Nachträge nach Fälligkeit, Status und Betrag priorisieren.",
+      "Abrechnungsstand gegen Auftrag und offene Honorare prüfen."
+    ],
+    tips: ["Für die kommerzielle Version braucht dieses Modul später prüfbare Vertrags- und Rechnungsworkflows."]
+  },
+  documents: {
+    title: "Dokumente und Pläne",
+    summary: "Dokumente, Pläne, Berechnungen und lokale Dateipfade werden in der Projektakte registriert.",
+    steps: [
+      "Datei registrieren, Projektreferenz, Typ, Revision und Verantwortlichen erfassen.",
+      "Optional einen lokalen Dateipfad hinterlegen.",
+      "In der Windows-App können verknüpfte Dateien direkt geöffnet werden."
+    ],
+    tips: ["Die aktuelle Einzelplatzversion speichert Dateiverweise, noch keine vollständige Dokumentenablage."]
+  },
+  communication: {
+    title: "Schriftverkehr",
+    summary: "Schriftverkehr, Protokolle und Aktennotizen werden mit Entscheidungen und Verantwortlichen verdichtet.",
+    steps: [
+      "Projektbezogene Kommunikation nach Betreff, Datum und Verantwortlichem prüfen.",
+      "Entscheidungen als Projektrisiko, Aufgabe oder Handlungsempfehlung weiterverfolgen.",
+      "Relevante Dokumente zusätzlich in der Dokumentenakte registrieren."
+    ],
+    tips: ["Eine spätere KI-Anbindung kann hier Protokolle und Mails auswerten."]
+  },
+  tasks: {
+    title: "Aufgaben und Fristen",
+    summary: "Das Board zeigt offene, laufende und erledigte Aufgaben sowie verbindliche Projektfristen.",
+    steps: [
+      "Aufgabe oder Frist über die Multifunktionsleiste anlegen.",
+      "Priorität, Verantwortlichen und Fälligkeit setzen.",
+      "Fristen regelmäßig gegen Terminplan und Projektstatus prüfen."
+    ],
+    tips: ["Überfällige Fristen werden im Dashboard als Risiko sichtbar."]
+  },
+  schedule: {
+    title: "Terminplan",
+    summary: "Der Terminplan visualisiert Projektphasen und Fortschritt über den Bürozeitraum.",
+    steps: [
+      "Projektphasen und Fortschritte im Zeitstrahl vergleichen.",
+      "Kritische Projekte gegen Fristen und Aufgaben spiegeln.",
+      "Terminverschiebungen später in eine echte Planungslogik überführen."
+    ],
+    tips: ["Die aktuelle Darstellung ist eine Steuerungssicht, noch kein vollwertiges Terminplanungsmodul."]
+  },
+  controlling: {
+    title: "Projektcontrolling",
+    summary: "Controlling verbindet Honorar, Abrechnung, Stundenverbrauch, Kosten und Risikoprojekte.",
+    steps: [
+      "Forecast-Marge, offene Honorare und externe Kosten prüfen.",
+      "Stundenverbrauch mit Budget und Leistungsstand vergleichen.",
+      "Risikoprojekte priorisieren und Handlungsempfehlungen ableiten."
+    ],
+    tips: ["Die Aussagekraft steigt mit sauberen Zeitbuchungen und gepflegten Vertragswerten."]
+  },
+  security: {
+    title: "Rechte und Sicherheit",
+    summary: "Benutzerkonten, Rollenmatrix, Backup, Verschlüsselung und Lizenzmodell werden zentral vorbereitet.",
+    steps: [
+      "Benutzer anlegen und mit Mitarbeitern verbinden.",
+      "Rollen prüfen und Rechte nach Bürostandard zuordnen.",
+      "Backup- und Verschlüsselungsstatus kontrollieren."
+    ],
+    tips: ["Produktive Benutzerrechte benötigen später Authentifizierung, Audit-Log und Mandantenfähigkeit."]
+  },
+  integrations: {
+    title: "KI und API",
+    summary: "Diese Ansicht sammelt geplante Schnittstellen für DMS, DATEV/FiBu, KI und externe Portale.",
+    steps: [
+      "Integrationsstatus und fachlichen Umfang prüfen.",
+      "API-Endpunkte als spätere technische Verträge verstehen.",
+      "KI-Funktionen erst nach stabiler Datenstruktur anbinden."
+    ],
+    tips: ["Schnittstellen sollten erst nach stabilen Rollen-, Dokumenten- und Projektmodellen produktiv werden."]
+  }
+};
 
 const state = {
   data: loadData(),
@@ -28,6 +152,7 @@ const state = {
   lastSavedFileName: window.localStorage.getItem("projektverwaltung-wtf-file-name") || "Projektverwaltung_WTF.wtf.json",
   dirty: false,
   status: "Bereit",
+  helpOpen: window.localStorage.getItem(HELP_KEY) === "1",
   hoai: {
     profileId: "building",
     zoneId: "III",
@@ -89,7 +214,7 @@ function normalizeData(data) {
   return normalized;
 }
 
-function markDirty(message = "Ungespeicherte Aenderungen") {
+function markDirty(message = "Ungespeicherte Änderungen") {
   state.dirty = true;
   state.status = message;
   persist();
@@ -188,7 +313,9 @@ function icon(name) {
     trash:
       '<path d="M8 4V2h8v2h5v2H3V4h5Zm-2 4h12l-1 14H7L6 8Zm4 3v8h2v-8h-2Zm4 0v8h2v-8h-2Z"/>',
     copy:
-      '<path d="M8 7h11v14H8V7Zm2 2v10h7V9h-7ZM5 17H3V3h11v2H5v12Z"/>'
+      '<path d="M8 7h11v14H8V7Zm2 2v10h7V9h-7ZM5 17H3V3h11v2H5v12Z"/>',
+    help:
+      '<path d="M11 18h2v2h-2v-2Zm1-16a7 7 0 0 0-7 7h2a5 5 0 1 1 8.2 3.8c-1.7 1.3-2.7 2.4-2.7 4.2h-2c0-2.6 1.4-4 3.4-5.5A3 3 0 1 0 9 9H7a5 5 0 0 1 5-5Z"/>'
   };
 
   return `<svg class="icon" aria-hidden="true" viewBox="0 0 24 24">${icons[name] || icons.dashboard}</svg>`;
@@ -196,8 +323,8 @@ function icon(name) {
 
 function toneClass(value) {
   const normalized = String(value || "").toLowerCase();
-  if (["hoch", "kritisch", "ueberfaellig"].includes(normalized)) return "tone-danger";
-  if (["mittel", "angeboten", "in pruefung", "in arbeit"].includes(normalized)) return "tone-warning";
+  if (["hoch", "kritisch", "überfällig"].includes(normalized)) return "tone-danger";
+  if (["mittel", "angeboten", "in prüfung", "in arbeit"].includes(normalized)) return "tone-warning";
   if (["niedrig", "ok", "aktiv", "freigegeben", "erledigt", "beauftragt"].includes(normalized)) return "tone-good";
   return "tone-neutral";
 }
@@ -211,7 +338,7 @@ function render() {
           <div class="brand-mark">WTF</div>
           <div>
             <strong>${escapeHtml(state.data.office.name)}</strong>
-            <span>Buero-Plattform</span>
+            <span>Büro-Plattform</span>
           </div>
         </div>
         <nav class="nav" aria-label="Hauptnavigation">
@@ -255,10 +382,12 @@ function render() {
                 .join("")}
             </select>
             <button class="icon-button" data-action="export" title="Daten als JSON exportieren">${icon("export")}</button>
-            <button class="icon-button" data-action="reset-demo" title="Demo-Daten zuruecksetzen">${icon("refresh")}</button>
+            <button class="icon-button" data-action="reset-demo" title="Demo-Daten zurücksetzen">${icon("refresh")}</button>
+            <button class="icon-button ${state.helpOpen ? "is-active" : ""}" data-action="toggle-help" title="Kontextbezogene Hilfe">${icon("help")}</button>
           </div>
         </header>
         ${renderRibbon()}
+        ${renderContextHelp()}
         ${renderMain()}
         ${renderModal()}
         <input class="hidden-file-input" data-file-input type="file" accept="application/json,.json,.wtf.json" />
@@ -268,7 +397,7 @@ function render() {
 }
 
 function currentRouteLabel() {
-  return routes.find(([id]) => id === state.route)?.[1] || "Uebersicht";
+  return routes.find(([id]) => id === state.route)?.[1] || "Übersicht";
 }
 
 function renderRibbon() {
@@ -276,12 +405,16 @@ function renderRibbon() {
     {
       title: "Datei",
       items: [
-        ["open-file", "Oeffnen", "open", "Projektdatei laden"],
+        ["open-file", "Öffnen", "open", "Projektdatei laden"],
         ["save-file", "Speichern", "save", "Aktuellen Stand sichern"],
         ["save-file-as", "Speichern unter", "export", "Neue Datei anlegen"]
       ]
     },
-    ribbonContextGroup()
+    ribbonContextGroup(),
+    {
+      title: "Hilfe",
+      items: [["toggle-help", "Hilfe", "help", "Kontextbezogene Hilfe zur aktuellen Ansicht"]]
+    }
   ].filter(Boolean);
 
   return `
@@ -299,7 +432,7 @@ function renderRibbon() {
         )
         .join("")}
       <div class="ribbon-status">
-        <strong>${state.dirty ? "Aenderungen offen" : "Aktuell"}</strong>
+        <strong>${state.dirty ? "Änderungen offen" : "Aktuell"}</strong>
         <span>${escapeHtml(state.status)}</span>
       </div>
     </section>
@@ -321,7 +454,7 @@ function ribbonContextGroup() {
         ["new-project", "Neu", "plus", "Projekt anlegen"],
         ["edit-project", "Bearbeiten", "edit", "Aktives Projekt"],
         ["duplicate-project", "Duplizieren", "copy", "Vorlage kopieren"],
-        ["delete-project", "Loeschen", "trash", "Aktives Projekt"]
+        ["delete-project", "Löschen", "trash", "Aktives Projekt"]
       ]
     },
     team: {
@@ -336,7 +469,7 @@ function ribbonContextGroup() {
       title: "Dokumente",
       items: [
         ["new-document", "Registrieren", "folder", "Datei erfassen"],
-        ["open-document", "Oeffnen", "open", "Aktives Dokument"]
+        ["open-document", "Öffnen", "open", "Aktives Dokument"]
       ]
     },
     tasks: {
@@ -377,6 +510,40 @@ function renderRibbonButton(action, label, iconName, detail) {
   `;
 }
 
+function renderContextHelp() {
+  if (!state.helpOpen) return "";
+  const help = contextHelpByRoute[state.route] || contextHelpByRoute.dashboard;
+  const project = activeProject();
+
+  return `
+    <aside class="context-help" aria-label="Kontextbezogene Hilfe">
+      <div class="context-help-main">
+        <div>
+          <span class="eyebrow">Hilfe zur Ansicht</span>
+          <h2>${escapeHtml(help.title)}</h2>
+          <p>${escapeHtml(help.summary)}</p>
+          <small>Aktives Projekt: ${escapeHtml(project?.number || "")} ${escapeHtml(project?.name || "kein Projekt gewählt")}</small>
+        </div>
+        <button class="icon-button" data-action="toggle-help" title="Hilfe schließen">x</button>
+      </div>
+      <div class="help-grid">
+        <div>
+          <strong>Vorgehen</strong>
+          <ol class="help-steps">
+            ${help.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
+          </ol>
+        </div>
+        <div>
+          <strong>Hinweise</strong>
+          <ul class="help-tips">
+            ${help.tips.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+    </aside>
+  `;
+}
+
 function renderModal() {
   if (!state.modal) return "";
   const title = modalTitle(state.modal.type);
@@ -388,7 +555,7 @@ function renderModal() {
             <span class="eyebrow">Bearbeiten</span>
             <h2>${escapeHtml(title)}</h2>
           </div>
-          <button class="icon-button" data-action="close-modal" title="Schliessen">x</button>
+          <button class="icon-button" data-action="close-modal" title="Schließen">x</button>
         </div>
         ${renderModalBody(state.modal)}
       </section>
@@ -429,14 +596,14 @@ function renderProjectForm(modal) {
         ${field("name", "Projektname", project.name || "", "text", true)}
         ${field("client", "Auftraggeber", project.client || "", "text", true)}
         ${field("address", "Adresse", project.address || "", "text")}
-        ${field("discipline", "Leistungsbild", project.discipline || "Objektplanung Gebaeude", "text", true)}
+        ${field("discipline", "Leistungsbild", project.discipline || "Objektplanung Gebäude", "text", true)}
         ${field("phase", "Phase", project.phase || "LPH 1 Grundlagenermittlung", "text")}
         ${selectField("status", "Status", ["angebot", "in Arbeit", "kritisch", "pausiert", "abgeschlossen"], project.status || "angebot")}
         ${selectField("risk", "Risiko", ["niedrig", "mittel", "hoch"], project.risk || "mittel")}
-        ${selectField("priority", "Prioritaet", ["normal", "mittel", "hoch"], project.priority || "mittel")}
+        ${selectField("priority", "Priorität", ["normal", "mittel", "hoch"], project.priority || "mittel")}
         ${selectField("manager", "Projektleitung", state.data.employees.map((employee) => employee.name), project.manager || state.data.employees[0]?.name || "")}
         ${field("start", "Start", project.start || "2026-05-15", "date")}
-        ${field("due", "Faellig", project.due || "2026-12-31", "date")}
+        ${field("due", "Fällig", project.due || "2026-12-31", "date")}
         ${field("chargeableCosts", "Anrechenbare Kosten", project.chargeableCosts || 0, "number")}
         ${field("contractedFee", "Auftrag netto", project.contractedFee || 0, "number")}
         ${field("hoursBudget", "Stundenbudget", project.hoursBudget || 0, "number")}
@@ -499,7 +666,7 @@ function renderDocumentForm() {
         ${selectField("type", "Typ", ["Plan", "Berechnung", "Angebot", "Vertrag", "Protokoll", "Schriftverkehr"], "Plan")}
         ${field("revision", "Revision", "A", "text")}
         ${selectField("owner", "Verantwortlich", state.data.employees.map((employee) => employee.name), state.data.employees[0]?.name || "")}
-        ${selectField("status", "Status", ["Entwurf", "in Arbeit", "Prueflauf", "freigegeben", "archiviert"], "Entwurf")}
+        ${selectField("status", "Status", ["Entwurf", "in Arbeit", "Prüflauf", "freigegeben", "archiviert"], "Entwurf")}
         ${field("storageUri", "Dateipfad oder Ablagehinweis", "", "text")}
         ${field("updated", "Stand", "2026-05-15", "date")}
       </div>
@@ -518,9 +685,9 @@ function renderTaskForm() {
         ${field("title", "Aufgabe", "", "text", true)}
         ${selectField("projectId", "Projekt", projectSelectItems(), state.selectedProjectId)}
         ${selectField("assignee", "Verantwortlich", state.data.employees.map((employee) => employee.name), state.data.employees[0]?.name || "")}
-        ${selectField("priority", "Prioritaet", ["normal", "mittel", "hoch"], "normal")}
+        ${selectField("priority", "Priorität", ["normal", "mittel", "hoch"], "normal")}
         ${selectField("area", "Bereich", ["Planung", "Honorar", "Berechnung", "Angebot", "Schriftverkehr"], "Planung")}
-        ${field("due", "Faellig", "2026-05-22", "date", true)}
+        ${field("due", "Fällig", "2026-05-22", "date", true)}
       </div>
       <div class="modal-actions">
         <button class="primary-action" type="submit">${icon("save")} Speichern</button>
@@ -557,7 +724,7 @@ function renderTimeForm() {
         ${field("date", "Datum", "2026-05-15", "date")}
         ${field("hours", "Stunden", 1, "number")}
         ${field("phase", "Phase", activeProject()?.phase || "LPH 1", "text")}
-        ${field("activity", "Taetigkeit", "", "text", true)}
+        ${field("activity", "Tätigkeit", "", "text", true)}
       </div>
       <label class="checkbox-line"><input name="billable" type="checkbox" checked /> abrechenbar</label>
       <div class="modal-actions">
@@ -713,7 +880,7 @@ function renderDashboard() {
         ${progressBar((project.hoursActual / project.hoursBudget) * 100, "Stundenverbrauch")}
         <div class="mini-columns">
           <div>
-            <h3>Naechste Fristen</h3>
+            <h3>Nächste Fristen</h3>
             ${projectDeadlines.map(renderDeadlineItem).join("") || emptyState("Keine Frist im aktiven Projekt")}
           </div>
           <div>
@@ -764,7 +931,7 @@ function progressBar(value, label) {
 
 function renderDeadlineItem(deadline) {
   const delta = daysUntil(deadline.date);
-  const label = delta < 0 ? "ueberfaellig" : `${delta} Tage`;
+  const label = delta < 0 ? "überfällig" : `${delta} Tage`;
   return `
     <div class="list-item">
       <span>
@@ -905,7 +1072,7 @@ function renderTeam() {
         <div class="panel-header">
           <div>
             <span class="eyebrow">Mitarbeiter</span>
-            <h2>Kapazitaet und Rechte</h2>
+            <h2>Kapazität und Rechte</h2>
           </div>
           <span class="pill tone-neutral">${number.format(totalHours)} h gebucht</span>
         </div>
@@ -938,7 +1105,7 @@ function renderTeam() {
             <input name="hours" min="0.25" step="0.25" type="number" value="1.00" />
           </div>
           <input name="phase" placeholder="Phase" value="LPH 5" />
-          <input name="activity" placeholder="Taetigkeit" required />
+          <input name="activity" placeholder="Tätigkeit" required />
           <label class="checkbox-line"><input name="billable" type="checkbox" checked /> abrechenbar</label>
           <button class="primary-action" type="submit">${icon("plus")} Buchen</button>
         </form>
@@ -969,7 +1136,7 @@ function renderTeam() {
       <div class="panel-header compact"><h2>Letzte Zeitbuchungen</h2></div>
       <div class="data-table">
         <div class="table-head six">
-          <span>Datum</span><span>Projekt</span><span>Mitarbeiter</span><span>Phase</span><span>Taetigkeit</span><span>Stunden</span>
+          <span>Datum</span><span>Projekt</span><span>Mitarbeiter</span><span>Phase</span><span>Tätigkeit</span><span>Stunden</span>
         </div>
         ${state.data.timeEntries.slice().reverse().map((entry) => `
           <div class="table-row six">
@@ -1055,8 +1222,8 @@ function renderHonorar() {
           <div class="sum-total"><span>Angebot brutto</span><strong>${money(result.gross)}</strong></div>
         </div>
         <div class="notice">
-          <strong>Pruefpunkt</strong>
-          <span>Die Tabellenwerte sind bewusst konfigurierbar und muessen vor produktiver Nutzung fachlich und rechtlich validiert werden.</span>
+          <strong>Prüfpunkt</strong>
+          <span>Die Tabellenwerte sind bewusst konfigurierbar und müssen vor produktiver Nutzung fachlich und rechtlich validiert werden.</span>
         </div>
       </aside>
     </section>
@@ -1084,7 +1251,7 @@ function renderContracts() {
       <div class="panel">
         <div class="panel-header">
           <div>
-            <span class="eyebrow">Vertraege</span>
+            <span class="eyebrow">Verträge</span>
             <h2>Auftraege und Abrechnung</h2>
           </div>
         </div>
@@ -1102,12 +1269,12 @@ function renderContracts() {
         </div>
       </div>
       <div class="panel">
-        <div class="panel-header compact"><h2>Nachtraege</h2></div>
+        <div class="panel-header compact"><h2>Nachträge</h2></div>
         ${state.data.addenda.map((addendum) => `
           <article class="record">
             <div>
               <strong>${escapeHtml(addendum.title)}</strong>
-              <span>${escapeHtml(projectName(addendum.projectId))} · faellig ${formatDate(addendum.due)}</span>
+              <span>${escapeHtml(projectName(addendum.projectId))} · fällig ${formatDate(addendum.due)}</span>
             </div>
             <span>${money(addendum.amount)}</span>
             <span class="pill ${toneClass(addendum.status)}">${escapeHtml(addendum.status)}</span>
@@ -1134,7 +1301,7 @@ function renderDocuments() {
       <div class="panel-header">
         <div>
           <span class="eyebrow">Dokumentenakte</span>
-          <h2>Plaene, Berechnungen und Versionen</h2>
+          <h2>Pläne, Berechnungen und Versionen</h2>
         </div>
         <span class="pill tone-neutral">${state.data.documents.length} Dateien</span>
       </div>
@@ -1144,7 +1311,7 @@ function renderDocuments() {
           <div class="table-row six">
             <span>
               <strong>${escapeHtml(document.name)}</strong>
-              ${document.storageUri ? `<button class="inline-action" data-action="open-document-file" data-document-id="${escapeHtml(document.id)}" title="Datei oeffnen">${icon("open")} Oeffnen</button>` : ""}
+              ${document.storageUri ? `<button class="inline-action" data-action="open-document-file" data-document-id="${escapeHtml(document.id)}" title="Datei öffnen">${icon("open")} Öffnen</button>` : ""}
             </span>
             <span>${escapeHtml(projectName(document.projectId))}</span>
             <span>${escapeHtml(document.type)}</span>
@@ -1226,7 +1393,7 @@ function renderTasks() {
     <section class="layout-three">
       ${renderQuickTaskPanel()}
       <div class="panel">
-        <div class="panel-header compact"><h2>Prioritaeten</h2></div>
+        <div class="panel-header compact"><h2>Prioritäten</h2></div>
         ${["hoch", "mittel", "normal"].map((priority) => {
           const count = state.data.tasks.filter((task) => task.priority === priority && task.status !== "erledigt").length;
           return `<div class="list-item"><span>${escapeHtml(priority)}</span><strong>${count}</strong></div>`;
@@ -1255,7 +1422,7 @@ function renderSchedule() {
           <span class="eyebrow">Terminplan</span>
           <h2>Projektphasen</h2>
         </div>
-        <span class="pill tone-neutral">Maerz 2026 - Februar 2027</span>
+        <span class="pill tone-neutral">März 2026 - Februar 2027</span>
       </div>
       <div class="timeline">
         ${state.data.schedule.map((item) => {
@@ -1473,6 +1640,12 @@ function openModal(type) {
   render();
 }
 
+function toggleContextHelp() {
+  state.helpOpen = !state.helpOpen;
+  window.localStorage.setItem(HELP_KEY, state.helpOpen ? "1" : "0");
+  render();
+}
+
 document.addEventListener("click", (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
@@ -1492,6 +1665,11 @@ document.addEventListener("click", (event) => {
   if (!action) return;
 
   const actionName = action.dataset.action;
+  if (actionName === "toggle-help") {
+    toggleContextHelp();
+    return;
+  }
+
   if (actionName === "close-modal") {
     if (event.target.closest("[data-modal-panel]") && event.target === action) {
       closeModal();
@@ -1530,6 +1708,13 @@ document.addEventListener("click", (event) => {
   if (actionName === "open-document") return openDocumentFile(activeDocument());
   if (actionName === "open-document-file") {
     return openDocumentFile(state.data.documents.find((document) => document.id === action.dataset.documentId));
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "F1") {
+    event.preventDefault();
+    toggleContextHelp();
   }
 });
 
@@ -1753,7 +1938,7 @@ document.addEventListener("submit", (event) => {
     state.modal = null;
   }
 
-  markDirty("Aenderung gespeichert");
+  markDirty("Änderung gespeichert");
   render();
 });
 
@@ -1796,8 +1981,8 @@ function deleteActiveProject() {
     ...state.data.contracts.filter((item) => item.projectId === project.id)
   ];
   const message = linkedItems.length
-    ? `Projekt "${project.name}" hat ${linkedItems.length} verknuepfte Eintraege. Trotzdem loeschen?`
-    : `Projekt "${project.name}" loeschen?`;
+    ? `Projekt "${project.name}" hat ${linkedItems.length} verknüpfte Eintraege. Trotzdem löschen?`
+    : `Projekt "${project.name}" löschen?`;
   if (!window.confirm(message)) return;
   state.data.projects = state.data.projects.filter((item) => item.id !== project.id);
   state.data.tasks = state.data.tasks.filter((item) => item.projectId !== project.id);
@@ -1807,7 +1992,7 @@ function deleteActiveProject() {
   state.data.contracts = state.data.contracts.filter((item) => item.projectId !== project.id);
   state.data.addenda = state.data.addenda.filter((item) => item.projectId !== project.id);
   state.selectedProjectId = state.data.projects[0]?.id || "";
-  markDirty("Projekt geloescht");
+  markDirty("Projekt gelöscht");
   render();
 }
 
@@ -1857,11 +2042,11 @@ function importProjectData(text, fileName = "Projektverwaltung_WTF.wtf.json") {
     state.lastSavedFileName = fileName;
     window.localStorage.setItem("projektverwaltung-wtf-file-name", fileName);
     state.dirty = false;
-    state.status = `Datei geoeffnet: ${fileName}`;
+    state.status = `Datei geöffnet: ${fileName}`;
     persist();
     render();
   } catch (error) {
-    window.alert(`Die Datei konnte nicht geoeffnet werden: ${error.message}`);
+    window.alert(`Die Datei konnte nicht geöffnet werden: ${error.message}`);
   }
 }
 
@@ -1877,7 +2062,7 @@ function downloadText(text, fileName) {
 
 function openDocumentFile(document) {
   if (!document?.storageUri) {
-    window.alert("Fuer dieses Dokument ist noch kein Dateipfad hinterlegt.");
+    window.alert("Für dieses Dokument ist noch kein Dateipfad hinterlegt.");
     return;
   }
 
@@ -1911,7 +2096,8 @@ if (desktopBridgeAvailable()) {
 window.ProjektverwaltungApp = {
   openFile: openProjectFile,
   saveFile: () => saveProjectFile(false),
-  saveFileAs: () => saveProjectFile(true)
+  saveFileAs: () => saveProjectFile(true),
+  toggleHelp: toggleContextHelp
 };
 
 function exportData() {
