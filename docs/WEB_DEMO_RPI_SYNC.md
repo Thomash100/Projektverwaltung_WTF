@@ -4,6 +4,10 @@
 
 Die aktuelle Oberfläche kann als statische Web-Demo auf einer Homepage bereitgestellt werden. Dafür werden mindestens diese Dateien veröffentlicht:
 
+Projekt / Repository:
+
+- Projektverwaltung_WTF: https://github.com/Thomash100/Projektverwaltung_WTF.git
+
 ```text
 index.html
 server.mjs
