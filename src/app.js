@@ -24,6 +24,10 @@ const state = {
   route: "dashboard",
   search: "",
   selectedProjectId: "",
+  modal: null,
+  lastSavedFileName: window.localStorage.getItem("projektverwaltung-wtf-file-name") || "Projektverwaltung_WTF.wtf.json",
+  dirty: false,
+  status: "Bereit",
   hoai: {
     profileId: "building",
     zoneId: "III",
@@ -44,14 +48,51 @@ function clone(value) {
 function loadData() {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : clone(seedData);
+    return normalizeData(stored ? JSON.parse(stored) : clone(seedData));
   } catch {
-    return clone(seedData);
+    return normalizeData(clone(seedData));
   }
 }
 
 function persist() {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+}
+
+function normalizeData(data) {
+  const normalized = { ...clone(seedData), ...data };
+  normalized.projects = Array.isArray(data.projects) ? data.projects : [];
+  normalized.employees = Array.isArray(data.employees) ? data.employees : [];
+  normalized.users = Array.isArray(data.users)
+    ? data.users
+    : normalized.employees.slice(0, 3).map((employee, index) => ({
+        id: `U-${String(index + 1).padStart(2, "0")}`,
+        name: employee.name,
+        employeeId: employee.id,
+        email: `${employee.name.toLowerCase().replaceAll(" ", ".")}@example.local`,
+        role: employee.rights || "Bearbeitung",
+        status: "aktiv",
+        lastLogin: ""
+      }));
+  normalized.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+  normalized.deadlines = Array.isArray(data.deadlines) ? data.deadlines : [];
+  normalized.timeEntries = Array.isArray(data.timeEntries) ? data.timeEntries : [];
+  normalized.contracts = Array.isArray(data.contracts) ? data.contracts : [];
+  normalized.addenda = Array.isArray(data.addenda) ? data.addenda : [];
+  normalized.documents = Array.isArray(data.documents) ? data.documents : [];
+  normalized.correspondence = Array.isArray(data.correspondence) ? data.correspondence : [];
+  normalized.recommendations = Array.isArray(data.recommendations) ? data.recommendations : [];
+  normalized.schedule = Array.isArray(data.schedule) ? data.schedule : [];
+  normalized.roles = Array.isArray(data.roles) ? data.roles : [];
+  normalized.backups = Array.isArray(data.backups) ? data.backups : [];
+  normalized.licenses = Array.isArray(data.licenses) ? data.licenses : [];
+  normalized.integrations = Array.isArray(data.integrations) ? data.integrations : [];
+  return normalized;
+}
+
+function markDirty(message = "Ungespeicherte Aenderungen") {
+  state.dirty = true;
+  state.status = message;
+  persist();
 }
 
 const currency = new Intl.NumberFormat("de-DE", {
@@ -137,7 +178,17 @@ function icon(name) {
     refresh:
       '<path d="M17.7 6.3A8 8 0 1 0 20 12h-2a6 6 0 1 1-1.8-4.3L13 11h8V3l-3.3 3.3Z"/>',
     export:
-      '<path d="M5 20h14v2H5v-2ZM11 3h2v10l3.5-3.5 1.4 1.4L12 16.8 6.1 10.9l1.4-1.4L11 13V3Z"/>'
+      '<path d="M5 20h14v2H5v-2ZM11 3h2v10l3.5-3.5 1.4 1.4L12 16.8 6.1 10.9l1.4-1.4L11 13V3Z"/>',
+    save:
+      '<path d="M5 3h12l2 2v16H5V3Zm2 2v5h9V5H7Zm0 14h10v-6H7v6Zm2-12h5V5H9v2Z"/>',
+    open:
+      '<path d="M4 5h6l2 2h8v3h-2V9H4v10l2.4-7H22l-3 9H3V5h1Z"/>',
+    edit:
+      '<path d="m4 17.2 9.6-9.6 2.8 2.8L6.8 20H4v-2.8ZM15 6.2l1.4-1.4a2 2 0 0 1 2.8 2.8L17.8 9 15 6.2Z"/>',
+    trash:
+      '<path d="M8 4V2h8v2h5v2H3V4h5Zm-2 4h12l-1 14H7L6 8Zm4 3v8h2v-8h-2Zm4 0v8h2v-8h-2Z"/>',
+    copy:
+      '<path d="M8 7h11v14H8V7Zm2 2v10h7V9h-7ZM5 17H3V3h11v2H5v12Z"/>'
   };
 
   return `<svg class="icon" aria-hidden="true" viewBox="0 0 24 24">${icons[name] || icons.dashboard}</svg>`;
@@ -188,6 +239,7 @@ function render() {
           <div>
             <span class="eyebrow">${escapeHtml(currentRouteLabel())}</span>
             <h1>${escapeHtml(project?.name || "Projektportfolio")}</h1>
+            <small class="workspace-status">${state.dirty ? "Nicht gespeichert" : "Gespeichert"} · ${escapeHtml(state.lastSavedFileName)}</small>
           </div>
           <div class="topbar-actions">
             <label class="search">
@@ -206,7 +258,10 @@ function render() {
             <button class="icon-button" data-action="reset-demo" title="Demo-Daten zuruecksetzen">${icon("refresh")}</button>
           </div>
         </header>
+        ${renderRibbon()}
         ${renderMain()}
+        ${renderModal()}
+        <input class="hidden-file-input" data-file-input type="file" accept="application/json,.json,.wtf.json" />
       </main>
     </div>
   `;
@@ -214,6 +269,336 @@ function render() {
 
 function currentRouteLabel() {
   return routes.find(([id]) => id === state.route)?.[1] || "Uebersicht";
+}
+
+function renderRibbon() {
+  const groups = [
+    {
+      title: "Datei",
+      items: [
+        ["open-file", "Oeffnen", "open", "Projektdatei laden"],
+        ["save-file", "Speichern", "save", "Aktuellen Stand sichern"],
+        ["save-file-as", "Speichern unter", "export", "Neue Datei anlegen"]
+      ]
+    },
+    ribbonContextGroup()
+  ].filter(Boolean);
+
+  return `
+    <section class="ribbon" aria-label="Multifunktionsleiste">
+      ${groups
+        .map(
+          (group) => `
+            <div class="ribbon-group">
+              <span class="ribbon-title">${escapeHtml(group.title)}</span>
+              <div class="ribbon-actions">
+                ${group.items.map(([action, label, iconName, detail]) => renderRibbonButton(action, label, iconName, detail)).join("")}
+              </div>
+            </div>
+          `
+        )
+        .join("")}
+      <div class="ribbon-status">
+        <strong>${state.dirty ? "Aenderungen offen" : "Aktuell"}</strong>
+        <span>${escapeHtml(state.status)}</span>
+      </div>
+    </section>
+  `;
+}
+
+function ribbonContextGroup() {
+  const byRoute = {
+    dashboard: {
+      title: "Start",
+      items: [
+        ["new-project", "Projekt", "plus", "Neues Projekt"],
+        ["new-task", "Aufgabe", "check", "Schnell anlegen"]
+      ]
+    },
+    projects: {
+      title: "Projekt",
+      items: [
+        ["new-project", "Neu", "plus", "Projekt anlegen"],
+        ["edit-project", "Bearbeiten", "edit", "Aktives Projekt"],
+        ["duplicate-project", "Duplizieren", "copy", "Vorlage kopieren"],
+        ["delete-project", "Loeschen", "trash", "Aktives Projekt"]
+      ]
+    },
+    team: {
+      title: "Team",
+      items: [
+        ["new-employee", "Mitarbeiter", "users", "Person anlegen"],
+        ["new-user", "Benutzer", "lock", "Login/Rechte"],
+        ["new-time", "Zeit", "plus", "Zeitbuchung"]
+      ]
+    },
+    documents: {
+      title: "Dokumente",
+      items: [
+        ["new-document", "Registrieren", "folder", "Datei erfassen"],
+        ["open-document", "Oeffnen", "open", "Aktives Dokument"]
+      ]
+    },
+    tasks: {
+      title: "Aufgaben",
+      items: [
+        ["new-task", "Aufgabe", "plus", "Neue Aufgabe"],
+        ["new-deadline", "Frist", "calendar", "Termin setzen"]
+      ]
+    },
+    security: {
+      title: "Benutzer",
+      items: [
+        ["new-user", "Benutzer", "plus", "Konto anlegen"],
+        ["new-employee", "Mitarbeiter", "users", "Person anlegen"]
+      ]
+    },
+    honorar: {
+      title: "Honorar",
+      items: [
+        ["new-project", "Projekt", "building", "Basis anlegen"],
+        ["save-file", "Sichern", "save", "Kalkulationsstand"]
+      ]
+    }
+  };
+
+  return byRoute[state.route] || {
+    title: "Aktionen",
+    items: [["new-task", "Aufgabe", "plus", "Neue Aufgabe"]]
+  };
+}
+
+function renderRibbonButton(action, label, iconName, detail) {
+  return `
+    <button class="ribbon-button" data-action="${escapeHtml(action)}" title="${escapeHtml(detail || label)}">
+      ${icon(iconName)}
+      <span>${escapeHtml(label)}</span>
+    </button>
+  `;
+}
+
+function renderModal() {
+  if (!state.modal) return "";
+  const title = modalTitle(state.modal.type);
+  return `
+    <div class="modal-backdrop" role="presentation" data-action="close-modal">
+      <section class="modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}" data-modal-panel>
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Bearbeiten</span>
+            <h2>${escapeHtml(title)}</h2>
+          </div>
+          <button class="icon-button" data-action="close-modal" title="Schliessen">x</button>
+        </div>
+        ${renderModalBody(state.modal)}
+      </section>
+    </div>
+  `;
+}
+
+function modalTitle(type) {
+  return {
+    project: "Projekt anlegen",
+    editProject: "Projekt bearbeiten",
+    employee: "Mitarbeiter anlegen",
+    user: "Benutzer anlegen",
+    document: "Datei registrieren",
+    task: "Aufgabe anlegen",
+    deadline: "Frist anlegen",
+    time: "Zeit buchen"
+  }[type] || "Eintrag bearbeiten";
+}
+
+function renderModalBody(modal) {
+  if (modal.type === "project" || modal.type === "editProject") return renderProjectForm(modal);
+  if (modal.type === "employee") return renderEmployeeForm();
+  if (modal.type === "user") return renderUserForm();
+  if (modal.type === "document") return renderDocumentForm();
+  if (modal.type === "task") return renderTaskForm();
+  if (modal.type === "deadline") return renderDeadlineForm();
+  if (modal.type === "time") return renderTimeForm();
+  return "";
+}
+
+function renderProjectForm(modal) {
+  const project = modal.type === "editProject" ? activeProject() : {};
+  return `
+    <form class="modal-form" data-form="${modal.type === "editProject" ? "project-edit" : "project"}">
+      <div class="form-grid">
+        ${field("number", "Projektnummer", project.number || nextProjectNumber(), "text", true)}
+        ${field("name", "Projektname", project.name || "", "text", true)}
+        ${field("client", "Auftraggeber", project.client || "", "text", true)}
+        ${field("address", "Adresse", project.address || "", "text")}
+        ${field("discipline", "Leistungsbild", project.discipline || "Objektplanung Gebaeude", "text", true)}
+        ${field("phase", "Phase", project.phase || "LPH 1 Grundlagenermittlung", "text")}
+        ${selectField("status", "Status", ["angebot", "in Arbeit", "kritisch", "pausiert", "abgeschlossen"], project.status || "angebot")}
+        ${selectField("risk", "Risiko", ["niedrig", "mittel", "hoch"], project.risk || "mittel")}
+        ${selectField("priority", "Prioritaet", ["normal", "mittel", "hoch"], project.priority || "mittel")}
+        ${selectField("manager", "Projektleitung", state.data.employees.map((employee) => employee.name), project.manager || state.data.employees[0]?.name || "")}
+        ${field("start", "Start", project.start || "2026-05-15", "date")}
+        ${field("due", "Faellig", project.due || "2026-12-31", "date")}
+        ${field("chargeableCosts", "Anrechenbare Kosten", project.chargeableCosts || 0, "number")}
+        ${field("contractedFee", "Auftrag netto", project.contractedFee || 0, "number")}
+        ${field("hoursBudget", "Stundenbudget", project.hoursBudget || 0, "number")}
+        ${field("tags", "Tags", (project.tags || []).join(", "), "text")}
+      </div>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderEmployeeForm() {
+  return `
+    <form class="modal-form" data-form="employee">
+      <div class="form-grid">
+        ${field("name", "Name", "", "text", true)}
+        ${field("role", "Funktion", "", "text", true)}
+        ${field("team", "Team", "Architektur", "text")}
+        ${field("weeklyHours", "Wochenstunden", 40, "number")}
+        ${field("costRate", "Interner Kostensatz", 70, "number")}
+        ${field("billRate", "Abrechnungssatz", 120, "number")}
+        ${field("utilization", "Auslastung %", 70, "number")}
+        ${selectField("rights", "Rechte", state.data.roles.map((role) => role.name), "Bearbeitung")}
+      </div>
+      <label class="checkbox-line"><input name="createUser" type="checkbox" checked /> auch Benutzerkonto anlegen</label>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderUserForm() {
+  return `
+    <form class="modal-form" data-form="user">
+      <div class="form-grid">
+        ${field("name", "Anzeigename", "", "text", true)}
+        ${field("email", "E-Mail / Login", "", "email", true)}
+        ${selectField("employeeId", "Mitarbeiterbezug", [{ value: "", label: "Nicht zugeordnet" }, ...state.data.employees.map((employee) => ({ value: employee.id, label: employee.name }))], "")}
+        ${selectField("role", "Rolle", state.data.roles.map((role) => role.name), "Bearbeitung")}
+        ${selectField("status", "Status", ["aktiv", "gesperrt", "vorbereitet"], "aktiv")}
+      </div>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderDocumentForm() {
+  return `
+    <form class="modal-form" data-form="document">
+      <div class="form-grid">
+        ${selectField("projectId", "Projekt", projectSelectItems(), state.selectedProjectId)}
+        ${field("name", "Dateiname / Titel", "", "text", true)}
+        ${selectField("type", "Typ", ["Plan", "Berechnung", "Angebot", "Vertrag", "Protokoll", "Schriftverkehr"], "Plan")}
+        ${field("revision", "Revision", "A", "text")}
+        ${selectField("owner", "Verantwortlich", state.data.employees.map((employee) => employee.name), state.data.employees[0]?.name || "")}
+        ${selectField("status", "Status", ["Entwurf", "in Arbeit", "Prueflauf", "freigegeben", "archiviert"], "Entwurf")}
+        ${field("storageUri", "Dateipfad oder Ablagehinweis", "", "text")}
+        ${field("updated", "Stand", "2026-05-15", "date")}
+      </div>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderTaskForm() {
+  return `
+    <form class="modal-form" data-form="task">
+      <div class="form-grid">
+        ${field("title", "Aufgabe", "", "text", true)}
+        ${selectField("projectId", "Projekt", projectSelectItems(), state.selectedProjectId)}
+        ${selectField("assignee", "Verantwortlich", state.data.employees.map((employee) => employee.name), state.data.employees[0]?.name || "")}
+        ${selectField("priority", "Prioritaet", ["normal", "mittel", "hoch"], "normal")}
+        ${selectField("area", "Bereich", ["Planung", "Honorar", "Berechnung", "Angebot", "Schriftverkehr"], "Planung")}
+        ${field("due", "Faellig", "2026-05-22", "date", true)}
+      </div>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderDeadlineForm() {
+  return `
+    <form class="modal-form" data-form="deadline">
+      <div class="form-grid">
+        ${field("title", "Frist / Termin", "", "text", true)}
+        ${selectField("projectId", "Projekt", projectSelectItems(), state.selectedProjectId)}
+        ${selectField("type", "Typ", ["Planlieferung", "Termin", "Freigabe", "Angebot", "Vertrag"], "Termin")}
+        ${field("date", "Datum", "2026-05-22", "date", true)}
+      </div>
+      <label class="checkbox-line"><input name="binding" type="checkbox" checked /> verbindlich</label>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderTimeForm() {
+  return `
+    <form class="modal-form" data-form="time">
+      <div class="form-grid">
+        ${selectField("projectId", "Projekt", projectSelectItems(), state.selectedProjectId)}
+        ${selectField("employee", "Mitarbeiter", state.data.employees.map((employee) => employee.name), state.data.employees[0]?.name || "")}
+        ${field("date", "Datum", "2026-05-15", "date")}
+        ${field("hours", "Stunden", 1, "number")}
+        ${field("phase", "Phase", activeProject()?.phase || "LPH 1", "text")}
+        ${field("activity", "Taetigkeit", "", "text", true)}
+      </div>
+      <label class="checkbox-line"><input name="billable" type="checkbox" checked /> abrechenbar</label>
+      <div class="modal-actions">
+        <button class="primary-action" type="submit">${icon("save")} Speichern</button>
+        <button class="icon-button text-button" type="button" data-action="close-modal">Abbrechen</button>
+      </div>
+    </form>
+  `;
+}
+
+function field(name, label, value = "", type = "text", required = false) {
+  return `
+    <label>
+      ${escapeHtml(label)}
+      <input name="${escapeHtml(name)}" type="${escapeHtml(type)}" value="${escapeHtml(value)}" ${required ? "required" : ""} />
+    </label>
+  `;
+}
+
+function projectSelectItems() {
+  return state.data.projects.map((project) => ({
+    value: project.id,
+    label: `${project.number} - ${project.name}`
+  }));
+}
+
+function selectField(name, label, options, value = "") {
+  return `
+    <label>
+      ${escapeHtml(label)}
+      <select name="${escapeHtml(name)}">
+        ${options
+          .map((option) => {
+            const optionValue = typeof option === "object" ? option.value : option;
+            const optionLabel = typeof option === "object" ? option.label : option;
+            return `<option value="${escapeHtml(optionValue)}" ${String(optionValue) === String(value) ? "selected" : ""}>${escapeHtml(optionLabel || "Nicht zugeordnet")}</option>`;
+          })
+          .join("")}
+      </select>
+    </label>
+  `;
 }
 
 function renderMain() {
@@ -560,6 +945,27 @@ function renderTeam() {
       </div>
     </section>
     <section class="panel">
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">Benutzerverwaltung</span>
+          <h2>Benutzerkonten und Rollen</h2>
+        </div>
+        <button class="primary-action" data-action="new-user">${icon("plus")} Benutzer anlegen</button>
+      </div>
+      <div class="data-table">
+        <div class="table-head five"><span>Name</span><span>Login</span><span>Mitarbeiter</span><span>Rolle</span><span>Status</span></div>
+        ${state.data.users.map((user) => `
+          <div class="table-row five">
+            <span>${escapeHtml(user.name)}</span>
+            <span>${escapeHtml(user.email)}</span>
+            <span>${escapeHtml(employeeNameById(user.employeeId))}</span>
+            <span>${escapeHtml(user.role)}</span>
+            <span class="pill ${toneClass(user.status)}">${escapeHtml(user.status)}</span>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+    <section class="panel">
       <div class="panel-header compact"><h2>Letzte Zeitbuchungen</h2></div>
       <div class="data-table">
         <div class="table-head six">
@@ -736,7 +1142,10 @@ function renderDocuments() {
         <div class="table-head six"><span>Name</span><span>Projekt</span><span>Typ</span><span>Revision</span><span>Status</span><span>Stand</span></div>
         ${state.data.documents.map((document) => `
           <div class="table-row six">
-            <span>${escapeHtml(document.name)}</span>
+            <span>
+              <strong>${escapeHtml(document.name)}</strong>
+              ${document.storageUri ? `<button class="inline-action" data-action="open-document-file" data-document-id="${escapeHtml(document.id)}" title="Datei oeffnen">${icon("open")} Oeffnen</button>` : ""}
+            </span>
             <span>${escapeHtml(projectName(document.projectId))}</span>
             <span>${escapeHtml(document.type)}</span>
             <span>${escapeHtml(document.revision)}</span>
@@ -905,6 +1314,27 @@ function renderControlling() {
 
 function renderSecurity() {
   return `
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">Benutzer</span>
+          <h2>Konten, Status und Rollen</h2>
+        </div>
+        <button class="primary-action" data-action="new-user">${icon("plus")} Benutzer anlegen</button>
+      </div>
+      <div class="data-table">
+        <div class="table-head five"><span>Name</span><span>Login</span><span>Mitarbeiter</span><span>Rolle</span><span>Status</span></div>
+        ${state.data.users.map((user) => `
+          <div class="table-row five">
+            <span>${escapeHtml(user.name)}</span>
+            <span>${escapeHtml(user.email)}</span>
+            <span>${escapeHtml(employeeNameById(user.employeeId))}</span>
+            <span>${escapeHtml(user.role)}</span>
+            <span class="pill ${toneClass(user.status)}">${escapeHtml(user.status)}</span>
+          </div>
+        `).join("")}
+      </div>
+    </section>
     <section class="layout-two">
       <div class="panel">
         <div class="panel-header">
@@ -1008,6 +1438,41 @@ function emptyState(label) {
   return `<div class="empty">${escapeHtml(label)}</div>`;
 }
 
+function nextId(prefix, items) {
+  const max = items.reduce((highest, item) => {
+    const numberPart = Number(String(item.id || "").replace(`${prefix}-`, ""));
+    return Number.isFinite(numberPart) ? Math.max(highest, numberPart) : highest;
+  }, 0);
+  return `${prefix}-${String(max + 1).padStart(2, "0")}`;
+}
+
+function nextProjectNumber() {
+  const max = state.data.projects.reduce((highest, project) => {
+    const numeric = Number(String(project.number || "").replace(/\D/g, ""));
+    return Number.isFinite(numeric) ? Math.max(highest, numeric) : highest;
+  }, 25000);
+  return String(max + 1).replace(/^(\d{2})(\d{3})$/, "$1-$2");
+}
+
+function employeeNameById(id) {
+  if (!id) return "Nicht zugeordnet";
+  return state.data.employees.find((employee) => employee.id === id)?.name || id;
+}
+
+function activeDocument() {
+  return state.data.documents.find((document) => document.projectId === state.selectedProjectId && document.storageUri) || state.data.documents.find((document) => document.storageUri);
+}
+
+function closeModal() {
+  state.modal = null;
+  render();
+}
+
+function openModal(type) {
+  state.modal = { type };
+  render();
+}
+
 document.addEventListener("click", (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
@@ -1026,15 +1491,45 @@ document.addEventListener("click", (event) => {
   const action = event.target.closest("[data-action]");
   if (!action) return;
 
-  if (action.dataset.action === "reset-demo") {
-    state.data = clone(seedData);
-    state.selectedProjectId = state.data.projects[0]?.id || "";
-    persist();
-    render();
+  const actionName = action.dataset.action;
+  if (actionName === "close-modal") {
+    if (event.target.closest("[data-modal-panel]") && event.target === action) {
+      closeModal();
+    } else if (!event.target.closest("[data-modal-panel]") || action.tagName === "BUTTON") {
+      closeModal();
+    }
+    return;
   }
 
-  if (action.dataset.action === "export") {
+  if (actionName === "reset-demo") {
+    state.data = normalizeData(clone(seedData));
+    state.selectedProjectId = state.data.projects[0]?.id || "";
+    markDirty("Demo-Daten wiederhergestellt");
+    render();
+    return;
+  }
+
+  if (actionName === "export") {
     exportData();
+    return;
+  }
+
+  if (actionName === "open-file") return openProjectFile();
+  if (actionName === "save-file") return saveProjectFile(false);
+  if (actionName === "save-file-as") return saveProjectFile(true);
+  if (actionName === "new-project") return openModal("project");
+  if (actionName === "edit-project") return openModal("editProject");
+  if (actionName === "duplicate-project") return duplicateActiveProject();
+  if (actionName === "delete-project") return deleteActiveProject();
+  if (actionName === "new-employee") return openModal("employee");
+  if (actionName === "new-user") return openModal("user");
+  if (actionName === "new-document") return openModal("document");
+  if (actionName === "new-task") return openModal("task");
+  if (actionName === "new-deadline") return openModal("deadline");
+  if (actionName === "new-time") return openModal("time");
+  if (actionName === "open-document") return openDocumentFile(activeDocument());
+  if (actionName === "open-document-file") {
+    return openDocumentFile(state.data.documents.find((document) => document.id === action.dataset.documentId));
   }
 });
 
@@ -1081,6 +1576,152 @@ document.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const data = Object.fromEntries(new FormData(form).entries());
+  if (form.dataset.form === "project") {
+    const project = {
+      id: `P-${Date.now().toString().slice(-5)}`,
+      number: data.number,
+      name: data.name,
+      client: data.client,
+      address: data.address,
+      discipline: data.discipline,
+      phase: data.phase,
+      status: data.status,
+      risk: data.risk,
+      priority: data.priority,
+      manager: data.manager,
+      deputy: "",
+      start: data.start,
+      due: data.due,
+      budgetFee: Number(data.contractedFee || 0),
+      contractedFee: Number(data.contractedFee || 0),
+      invoiced: 0,
+      paid: 0,
+      chargeableCosts: Number(data.chargeableCosts || 0),
+      externalCosts: 0,
+      hoursBudget: Number(data.hoursBudget || 0),
+      hoursActual: 0,
+      progress: 0,
+      marginTarget: 24,
+      marginForecast: 24,
+      tags: String(data.tags || "").split(",").map((tag) => tag.trim()).filter(Boolean)
+    };
+    state.data.projects.push(project);
+    state.selectedProjectId = project.id;
+    state.route = "projects";
+    state.modal = null;
+    markDirty("Projekt angelegt");
+    render();
+    return;
+  }
+
+  if (form.dataset.form === "project-edit") {
+    const project = activeProject();
+    Object.assign(project, {
+      number: data.number,
+      name: data.name,
+      client: data.client,
+      address: data.address,
+      discipline: data.discipline,
+      phase: data.phase,
+      status: data.status,
+      risk: data.risk,
+      priority: data.priority,
+      manager: data.manager,
+      start: data.start,
+      due: data.due,
+      contractedFee: Number(data.contractedFee || 0),
+      budgetFee: Number(data.contractedFee || 0),
+      chargeableCosts: Number(data.chargeableCosts || 0),
+      hoursBudget: Number(data.hoursBudget || 0),
+      tags: String(data.tags || "").split(",").map((tag) => tag.trim()).filter(Boolean)
+    });
+    state.modal = null;
+    markDirty("Projekt aktualisiert");
+    render();
+    return;
+  }
+
+  if (form.dataset.form === "employee") {
+    const employee = {
+      id: nextId("E", state.data.employees),
+      name: data.name,
+      role: data.role,
+      team: data.team,
+      weeklyHours: Number(data.weeklyHours || 0),
+      costRate: Number(data.costRate || 0),
+      billRate: Number(data.billRate || 0),
+      utilization: Number(data.utilization || 0),
+      rights: data.rights
+    };
+    state.data.employees.push(employee);
+    if (data.createUser === "on") {
+      state.data.users.push({
+        id: nextId("U", state.data.users),
+        name: employee.name,
+        employeeId: employee.id,
+        email: `${employee.name.toLowerCase().replaceAll(" ", ".")}@example.local`,
+        role: employee.rights,
+        status: "vorbereitet",
+        lastLogin: ""
+      });
+    }
+    state.modal = null;
+    state.route = "team";
+    markDirty("Mitarbeiter angelegt");
+    render();
+    return;
+  }
+
+  if (form.dataset.form === "user") {
+    state.data.users.push({
+      id: nextId("U", state.data.users),
+      name: data.name,
+      employeeId: data.employeeId,
+      email: data.email,
+      role: data.role,
+      status: data.status,
+      lastLogin: ""
+    });
+    state.modal = null;
+    markDirty("Benutzer angelegt");
+    render();
+    return;
+  }
+
+  if (form.dataset.form === "document") {
+    state.data.documents.push({
+      id: `DOC-${Date.now().toString().slice(-6)}`,
+      projectId: data.projectId,
+      name: data.name,
+      type: data.type,
+      revision: data.revision,
+      owner: data.owner,
+      status: data.status,
+      storageUri: data.storageUri,
+      updated: data.updated
+    });
+    state.modal = null;
+    state.route = "documents";
+    markDirty("Datei registriert");
+    render();
+    return;
+  }
+
+  if (form.dataset.form === "deadline") {
+    state.data.deadlines.push({
+      id: `D-${Date.now().toString().slice(-5)}`,
+      projectId: data.projectId,
+      title: data.title,
+      date: data.date,
+      type: data.type,
+      binding: data.binding === "on"
+    });
+    state.modal = null;
+    markDirty("Frist angelegt");
+    render();
+    return;
+  }
+
   if (form.dataset.form === "task") {
     state.data.tasks.push({
       id: `T-${Date.now().toString().slice(-5)}`,
@@ -1090,8 +1731,9 @@ document.addEventListener("submit", (event) => {
       status: "offen",
       due: data.due,
       priority: data.priority,
-      area: "Planung"
+      area: data.area || "Planung"
     });
+    state.modal = null;
   }
 
   if (form.dataset.form === "time") {
@@ -1108,20 +1750,172 @@ document.addEventListener("submit", (event) => {
 
     const project = state.data.projects.find((item) => item.id === data.projectId);
     if (project) project.hoursActual += Number(data.hours || 0);
+    state.modal = null;
   }
 
-  persist();
+  markDirty("Aenderung gespeichert");
   render();
 });
 
-function exportData() {
-  const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: "application/json" });
+document.addEventListener("change", async (event) => {
+  const target = event.target;
+  if (!target.matches("[data-file-input]") || !target.files?.length) return;
+  const file = target.files[0];
+  const text = await file.text();
+  importProjectData(text, file.name);
+  target.value = "";
+});
+
+function duplicateActiveProject() {
+  const project = activeProject();
+  if (!project) return;
+  const copy = {
+    ...clone(project),
+    id: `P-${Date.now().toString().slice(-5)}`,
+    number: nextProjectNumber(),
+    name: `${project.name} Kopie`,
+    status: "angebot",
+    invoiced: 0,
+    paid: 0,
+    hoursActual: 0,
+    progress: 0
+  };
+  state.data.projects.push(copy);
+  state.selectedProjectId = copy.id;
+  state.route = "projects";
+  markDirty("Projekt dupliziert");
+  render();
+}
+
+function deleteActiveProject() {
+  const project = activeProject();
+  if (!project) return;
+  const linkedItems = [
+    ...state.data.tasks.filter((item) => item.projectId === project.id),
+    ...state.data.documents.filter((item) => item.projectId === project.id),
+    ...state.data.contracts.filter((item) => item.projectId === project.id)
+  ];
+  const message = linkedItems.length
+    ? `Projekt "${project.name}" hat ${linkedItems.length} verknuepfte Eintraege. Trotzdem loeschen?`
+    : `Projekt "${project.name}" loeschen?`;
+  if (!window.confirm(message)) return;
+  state.data.projects = state.data.projects.filter((item) => item.id !== project.id);
+  state.data.tasks = state.data.tasks.filter((item) => item.projectId !== project.id);
+  state.data.deadlines = state.data.deadlines.filter((item) => item.projectId !== project.id);
+  state.data.timeEntries = state.data.timeEntries.filter((item) => item.projectId !== project.id);
+  state.data.documents = state.data.documents.filter((item) => item.projectId !== project.id);
+  state.data.contracts = state.data.contracts.filter((item) => item.projectId !== project.id);
+  state.data.addenda = state.data.addenda.filter((item) => item.projectId !== project.id);
+  state.selectedProjectId = state.data.projects[0]?.id || "";
+  markDirty("Projekt geloescht");
+  render();
+}
+
+function projectFilePayload() {
+  return {
+    format: "Projektverwaltung_WTF",
+    version: 1,
+    savedAt: new Date().toISOString(),
+    data: state.data
+  };
+}
+
+function desktopBridgeAvailable() {
+  return Boolean(window.chrome?.webview);
+}
+
+function saveProjectFile(forceDialog) {
+  const payload = JSON.stringify(projectFilePayload(), null, 2);
+  if (desktopBridgeAvailable()) {
+    window.chrome.webview.postMessage({
+      type: forceDialog ? "saveDataAs" : "saveData",
+      fileName: state.lastSavedFileName,
+      payload
+    });
+    return;
+  }
+
+  downloadText(payload, state.lastSavedFileName || "Projektverwaltung_WTF.wtf.json");
+  state.dirty = false;
+  state.status = "Datei exportiert";
+  render();
+}
+
+function openProjectFile() {
+  if (desktopBridgeAvailable()) {
+    window.chrome.webview.postMessage({ type: "openData" });
+    return;
+  }
+  document.querySelector("[data-file-input]")?.click();
+}
+
+function importProjectData(text, fileName = "Projektverwaltung_WTF.wtf.json") {
+  try {
+    const parsed = JSON.parse(text);
+    state.data = normalizeData(parsed.data || parsed);
+    state.selectedProjectId = state.data.projects[0]?.id || "";
+    state.lastSavedFileName = fileName;
+    window.localStorage.setItem("projektverwaltung-wtf-file-name", fileName);
+    state.dirty = false;
+    state.status = `Datei geoeffnet: ${fileName}`;
+    persist();
+    render();
+  } catch (error) {
+    window.alert(`Die Datei konnte nicht geoeffnet werden: ${error.message}`);
+  }
+}
+
+function downloadText(text, fileName) {
+  const blob = new Blob([text], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "projektverwaltung-wtf-export.json";
+  link.download = fileName;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function openDocumentFile(document) {
+  if (!document?.storageUri) {
+    window.alert("Fuer dieses Dokument ist noch kein Dateipfad hinterlegt.");
+    return;
+  }
+
+  if (desktopBridgeAvailable()) {
+    window.chrome.webview.postMessage({ type: "openExternalFile", path: document.storageUri });
+    return;
+  }
+
+  window.alert(`Dateipfad: ${document.storageUri}`);
+}
+
+if (desktopBridgeAvailable()) {
+  window.chrome.webview.addEventListener("message", (event) => {
+    const message = event.data || {};
+    if (message.type === "fileOpened") {
+      importProjectData(message.payload, message.fileName);
+    }
+    if (message.type === "fileSaved") {
+      state.lastSavedFileName = message.fileName || state.lastSavedFileName;
+      window.localStorage.setItem("projektverwaltung-wtf-file-name", state.lastSavedFileName);
+      state.dirty = false;
+      state.status = `Gespeichert: ${state.lastSavedFileName}`;
+      render();
+    }
+    if (message.type === "desktopError") {
+      window.alert(message.message || "Desktop-Aktion fehlgeschlagen.");
+    }
+  });
+}
+
+window.ProjektverwaltungApp = {
+  openFile: openProjectFile,
+  saveFile: () => saveProjectFile(false),
+  saveFileAs: () => saveProjectFile(true)
+};
+
+function exportData() {
+  downloadText(JSON.stringify(projectFilePayload(), null, 2), "projektverwaltung-wtf-export.json");
 }
 
 render();

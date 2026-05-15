@@ -41,8 +41,11 @@ Dieser lokale Start ist nur fuer Entwicklung und Fehlersuche gedacht. Fuer Anwen
 ## Aktueller Umfang
 
 - Zentrales Dashboard mit Portfolio-KPIs, aktivem Projekt, Fristen, Aufgaben und Handlungsempfehlungen.
-- Projektakte mit Leistungsstand, Honorar, Stundenverbrauch, Risiko, Auftraggeber und Tags.
-- Mitarbeiter- und Zeiterfassung mit lokalen Buchungen.
+- Kontextabhaengige Multifunktionsleiste mit Datei-, Projekt-, Team-, Aufgaben- und Dokumentaktionen.
+- Projektakte mit Projektanlage, Bearbeitung, Duplizieren, Loeschen, Leistungsstand, Honorar, Stundenverbrauch, Risiko, Auftraggeber und Tags.
+- Mitarbeiter-, Benutzer- und Zeiterfassung mit lokalen Buchungen und Rollenbezug.
+- Projektdateien nativ oeffnen und speichern in der Windows-App; Browser-Fallback per JSON-Export/-Import.
+- Dokumente und Plaene registrieren und mit lokalen Dateipfaden verknuepfen.
 - HOAI-orientierte Angebots- und Honorarmaske mit Leistungsbild, Honorarzone, Leistungsphasen, Nebenkosten und Nachlass.
 - Vertrags-, Nachtrags- und Abrechnungsuebersicht.
 - Dokumenten- und Planliste mit Revision, Status und Verantwortlichen.

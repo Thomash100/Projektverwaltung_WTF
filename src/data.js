@@ -181,6 +181,35 @@ export const seedData = {
       rights: "Bearbeitung"
     }
   ],
+  users: [
+    {
+      id: "U-01",
+      name: "Thomas Hofmann",
+      employeeId: "E-04",
+      email: "thomas.hofmann@example.local",
+      role: "Bueroleitung",
+      status: "aktiv",
+      lastLogin: "2026-05-15"
+    },
+    {
+      id: "U-02",
+      name: "Lena Vogt",
+      employeeId: "E-01",
+      email: "lena.vogt@example.local",
+      role: "Projektleitung",
+      status: "aktiv",
+      lastLogin: "2026-05-14"
+    },
+    {
+      id: "U-03",
+      name: "Jasmin Keller",
+      employeeId: "E-03",
+      email: "jasmin.keller@example.local",
+      role: "Bearbeitung",
+      status: "aktiv",
+      lastLogin: "2026-05-13"
+    }
+  ],
   tasks: [
     {
       id: "T-101",

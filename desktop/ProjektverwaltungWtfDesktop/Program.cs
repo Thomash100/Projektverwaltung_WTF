@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Windows.Forms;
 
 namespace ProjektverwaltungWtfDesktop;
@@ -62,6 +63,10 @@ internal sealed class MainForm : Form
         var view = new ToolStripMenuItem("&Ansicht");
         var help = new ToolStripMenuItem("&Hilfe");
 
+        file.DropDownItems.Add("Oeffnen", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.openFile?.()"));
+        file.DropDownItems.Add("Speichern", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.saveFile?.()"));
+        file.DropDownItems.Add("Speichern unter", null, async (_, _) => await ExecuteAppScriptAsync("window.ProjektverwaltungApp?.saveFileAs?.()"));
+        file.DropDownItems.Add(new ToolStripSeparator());
         file.DropDownItems.Add("Beenden", null, (_, _) => Close());
         view.DropDownItems.Add("Neu laden", null, (_, _) => webView.Reload());
         view.DropDownItems.Add("Startseite", null, (_, _) => webView.Source = new Uri(runtime.Url));
@@ -97,6 +102,7 @@ internal sealed class MainForm : Form
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
             webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
             webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+            webView.CoreWebView2.WebMessageReceived += HandleWebMessage;
             webView.Source = new Uri(runtime.Url);
             statusLabel.Text = $"Lokal verbunden: {runtime.Url}";
         }
@@ -109,6 +115,112 @@ internal sealed class MainForm : Form
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
+    }
+
+    private async Task ExecuteAppScriptAsync(string script)
+    {
+        if (webView.CoreWebView2 is null) return;
+        await webView.CoreWebView2.ExecuteScriptAsync(script);
+    }
+
+    private void HandleWebMessage(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs args)
+    {
+        try
+        {
+            using var message = JsonDocument.Parse(args.WebMessageAsJson);
+            var root = message.RootElement;
+            var type = root.GetProperty("type").GetString();
+
+            if (type is "saveData" or "saveDataAs")
+            {
+                SaveData(root, forceDialog: type == "saveDataAs");
+                return;
+            }
+
+            if (type == "openData")
+            {
+                OpenData();
+                return;
+            }
+
+            if (type == "openExternalFile")
+            {
+                var path = root.TryGetProperty("path", out var pathElement) ? pathElement.GetString() : "";
+                OpenExternalFile(path);
+            }
+        }
+        catch (Exception ex)
+        {
+            PostDesktopError(ex.Message);
+        }
+    }
+
+    private void SaveData(JsonElement message, bool forceDialog)
+    {
+        var payload = message.GetProperty("payload").GetString() ?? "{}";
+        var suggested = message.TryGetProperty("fileName", out var fileNameElement)
+            ? fileNameElement.GetString()
+            : "Projektverwaltung_WTF.wtf.json";
+
+        using var dialog = new SaveFileDialog
+        {
+            Title = "Projektverwaltung_WTF speichern",
+            Filter = "Projektverwaltung_WTF (*.wtf.json)|*.wtf.json|JSON-Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*",
+            FileName = string.IsNullOrWhiteSpace(suggested) ? "Projektverwaltung_WTF.wtf.json" : suggested,
+            AddExtension = true,
+            DefaultExt = "wtf.json",
+            OverwritePrompt = true
+        };
+
+        if (!forceDialog && !string.IsNullOrWhiteSpace(suggested) && Path.IsPathFullyQualified(suggested))
+        {
+            File.WriteAllText(suggested, payload, Encoding.UTF8);
+            PostJson(new { type = "fileSaved", fileName = suggested });
+            return;
+        }
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        File.WriteAllText(dialog.FileName, payload, Encoding.UTF8);
+        PostJson(new { type = "fileSaved", fileName = dialog.FileName });
+    }
+
+    private void OpenData()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = "Projektverwaltung_WTF oeffnen",
+            Filter = "Projektverwaltung_WTF (*.wtf.json)|*.wtf.json|JSON-Dateien (*.json)|*.json|Alle Dateien (*.*)|*.*",
+            CheckFileExists = true
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        var payload = File.ReadAllText(dialog.FileName, Encoding.UTF8);
+        PostJson(new { type = "fileOpened", fileName = dialog.FileName, payload });
+    }
+
+    private void OpenExternalFile(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            PostDesktopError("Die Datei wurde nicht gefunden.");
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = path,
+            UseShellExecute = true
+        });
+    }
+
+    private void PostJson(object payload)
+    {
+        webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(payload));
+    }
+
+    private void PostDesktopError(string message)
+    {
+        PostJson(new { type = "desktopError", message });
     }
 }
 
