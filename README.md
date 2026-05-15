@@ -8,8 +8,10 @@ Die Anwendung ist als lokale, abhaengigkeitsfreie Web-App umgesetzt. Sie kann so
 
 ```powershell
 cd "D:\Users\ThomasHofmann\Documents\New project\Projektverwaltung_WTF"
-node server.mjs
+.\start.cmd
 ```
+
+Falls `node server.mjs` nicht funktioniert, ist Node.js nicht im Windows-PATH. `start.cmd` sucht automatisch nach einer vorhandenen Runtime, unter anderem aus der lokalen Einzelplatzinstallation.
 
 Danach im Browser oeffnen:
 
@@ -18,6 +20,22 @@ http://localhost:4173
 ```
 
 Alternativ kann `index.html` direkt geoeffnet werden. Der lokale Server ist fuer spaetere API- und Desktop-Integration aber der bessere Weg.
+
+## Windows-Setup
+
+Eine lokale Einzelplatz-Setup-EXE kann mit folgendem Befehl erzeugt werden:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\installer\build-setup.ps1
+```
+
+Das Ergebnis liegt danach hier:
+
+```text
+dist\Projektverwaltung_WTF_Setup_Einzelplatz.exe
+```
+
+Die Installation erfolgt per-user nach `%LOCALAPPDATA%\Projektverwaltung_WTF`, bringt eine eigene Node-Runtime mit und erstellt Desktop- sowie Startmenue-Verknuepfungen. Gestartet wird eine richtige Windows-Desktop-App mit eigenem Fenster auf Basis von WebView2; die Anwendung laeuft nicht als normaler Browser-Tab.
 
 ## Aktueller Umfang
 

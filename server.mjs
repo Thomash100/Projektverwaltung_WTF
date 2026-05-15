@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = __dirname;
 const port = Number(process.env.PORT || 4173);
+const host = process.env.HOST || "127.0.0.1";
 
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -66,6 +67,6 @@ const server = createServer(async (request, response) => {
   }
 });
 
-server.listen(port, "0.0.0.0", () => {
+server.listen(port, host, () => {
   console.log(`Projektverwaltung_WTF laeuft auf http://localhost:${port}`);
 });

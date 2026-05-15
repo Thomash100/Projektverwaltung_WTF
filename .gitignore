@@ -368,3 +368,14 @@ dist/
 *.log
 *-preview.png
 projektverwaltung-wtf-export.json
+
+# Projektverwaltung_WTF desktop build outputs
+desktop/**/bin/
+desktop/**/obj/
+build-installer/
+installer/setup/bin/
+installer/setup/obj/
+installer/setup/build-installer/
+dist/*
+!dist/
+!dist/Projektverwaltung_WTF_Setup_Einzelplatz.exe
