@@ -24,6 +24,8 @@ Hinweis: Diese Version ist eine Developer Beta. Setup und App zeigen deshalb ein
 
 Die Oberfläche kann auch als Demo-Webversion auf einer Internetseite bereitgestellt werden. Für eine öffentliche Homepage-Demo sollte nur der statische Demo-Modus verwendet werden, damit Besucher keine produktiven Daten auf einem öffentlichen Server speichern.
 
+Online-Demo: https://projects.systemmedia.de/projektverwaltung-wtf/
+
 Für Büro-/Unterwegsbetrieb ist ein Raspberry Pi oder Linux-Server als Sync-Ziel vorbereitet. Die App hat unter `Einstellungen` eine IP-/Netzwerksuche, Verbindungstest sowie gezieltes Hochladen und Laden des Projektstands. Details stehen in [docs/WEB_DEMO_RPI_SYNC.md](docs/WEB_DEMO_RPI_SYNC.md).
 
 ## Raspberry-Pi-Installation
